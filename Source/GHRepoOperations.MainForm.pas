@@ -15,7 +15,8 @@ uses
   GHRepoOperations.MainRT,
   GHRepoOperations.Messages,
   GHRepoOperations.ProgBar,
-  GHRepoOperations.TreeViewBuilder;
+  GHRepoOperations.TreeViewBuilder,
+  GHRepoOperations.Utils;
 
 type
   TFrmMain = class(TForm)
@@ -37,8 +38,10 @@ type
     procedure tvMainAfterCheckNode(Sender: TObject;
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
   private
+    FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
+    procedure OnTerminateFillTreeView(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -54,26 +57,21 @@ implementation
 procedure TFrmMain.btnRepoListClick(Sender: TObject);
 var
   LOrg, LTopic: string;
-  LMainRT: TGHRepoOperationsRT;
-  LRepoModels: TArray<TGHCliRepoModel>;
-  I: Integer;
 begin
   LOrg   := cbxOrganizations.Items[cbxOrganizations.ItemIndex];
   LTopic := cbxTopics.Items[cbxTopics.ItemIndex];
 
-  LMainRT := TGHRepoOperationsRT.Create;
-  try
-    LMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
-    LRepoModels := LMainRT.ExtractReposInfo(LOrg, LTopic);
-    try
-      FillTreeView(LRepoModels);
-    finally
-      for I := 0 to High(LRepoModels) do
-        FreeAndNil(LRepoModels[I]);
-    end;
-  finally
-    FreeAndNil(LMainRT);
-  end;
+  // utilizzo una variabile globale alla classe così da farci riferimento
+  // nell'evento OnTerminate
+  FMainRT := TGHRepoOperationsRT.Create(True);
+  FMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
+  FMainRT.Organization := LOrg;
+  FMainRT.Topic := LTopic;
+  FMainRT.OnTerminate := OnTerminateFillTreeView;
+
+  // riabilito i controlli nell'OnTerminate
+  TGHVCLUtils.EnableControlsAndChilds(pnlTop, False, True);
+  FMainRT.Start;
 end;
 
 constructor TFrmMain.Create(AOwner: TComponent);
@@ -88,6 +86,15 @@ begin
   inherited;
 end;
 
+procedure TFrmMain.OnTerminateFillTreeView(Sender: TObject);
+begin
+  try
+    FillTreeView( FMainRT.RepoModels );
+  finally
+    TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
+  end;
+end;
+
 procedure TFrmMain.FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
 begin
   tvMain.BeginUpdate;
@@ -97,8 +104,6 @@ begin
     tvMain.EndUpdate;
     tvMain.ExpandAll;
   end;
-//    tvMain.Refresh;
-//    LoadRepoTree(ARepoModels);
 end;
 
 procedure TFrmMain.FormShow(Sender: TObject);

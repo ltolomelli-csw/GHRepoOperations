@@ -16,18 +16,44 @@ uses
   GHRepoOperations.Utils;
 
 type
-  TGHRepoOperationsRT = class
+  TGHRepoOperationsRT = class(TThread)
   private
     FGHRepoOpProgressBar: IGHRepoOpProgressBar;
+    FOrganization: string;
+    FTopic: string;
+    FRepoModels: TArray<TGHCliRepoModel>;
+    function ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>; overload;
   public
-    function ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>;
+    destructor Destroy; override;
+
+    procedure Execute; override;
+    function ExtractReposInfo: TArray<TGHCliRepoModel>; overload;
 
     property GHRepoOpProgressBar: IGHRepoOpProgressBar read FGHRepoOpProgressBar write FGHRepoOpProgressBar;
+    property Organization: string read FOrganization write FOrganization;
+    property Topic: string read FTopic write FTopic;
+    property RepoModels: TArray<TGHCliRepoModel> read FRepoModels;
   end;
 
 implementation
 
 { TGHRepoOperationsRT }
+
+destructor TGHRepoOperationsRT.Destroy;
+var
+  I: Integer;
+begin
+  for I := 0 to High(RepoModels) do
+    FreeAndNil(RepoModels[I]);
+  inherited;
+end;
+
+procedure TGHRepoOperationsRT.Execute;
+begin
+  inherited;
+  FreeOnTerminate := True;
+  FRepoModels := ExtractReposInfo;
+end;
 
 function TGHRepoOperationsRT.ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>;
 var
@@ -82,6 +108,11 @@ begin
     if TFile.Exists(LTempReleaseFileName) then
       TFile.Delete(LTempReleaseFileName);
   end;
+end;
+
+function TGHRepoOperationsRT.ExtractReposInfo: TArray<TGHCliRepoModel>;
+begin
+  Result := ExtractReposInfo(Organization, Topic);
 end;
 
 end.

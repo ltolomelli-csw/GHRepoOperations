@@ -28,7 +28,8 @@ type
     function IsStatusPanelAssigned: Boolean;
     procedure SetInitialMsg(const Value: string);
   public
-    constructor Create(const AProgBar: TProgressBar; const AStatusPanel: TStatusPanel);
+    constructor Create(AProgBar: TProgressBar; AStatusPanel: TStatusPanel);
+    destructor Destroy; override;
 
     procedure Clear;
     procedure SetMessage(const AMsg: string; const AShowProgNum: Boolean = True);
@@ -47,40 +48,62 @@ implementation
 
 procedure InitializeGHRepoProgBar(AJSIProgBar: IGHRepoOpProgressBar; const AMsg: string; const AMax: Integer);
 begin
-  if Assigned(AJSIProgBar) then
-  begin
-    AJSIProgBar.Clear;
-    AJSIProgBar.Max(AMax);
-    (AJSIProgBar as TGHRepoOpProgressBar).InitialMsg := AMsg;
-    AJSIProgBar.SetMessage(AMsg, False);
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if Assigned(AJSIProgBar) then
+      begin
+        AJSIProgBar.Clear;
+        AJSIProgBar.Max(AMax);
+        (AJSIProgBar as TGHRepoOpProgressBar).InitialMsg := AMsg;
+        AJSIProgBar.SetMessage(AMsg, False);
+      end;
+    end
+  );
 end;
 
 { TGHRepoOpProgressBar }
 
 procedure TGHRepoOpProgressBar.Clear;
 begin
-  if IsPBAssigned then
-  begin
-    FProgBar.Position := 1;
-    FProgBar.Step := 1;
-    FProgBar.Min  := 1;
-    FProgBar.Max  := 100;
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if IsPBAssigned then
+      begin
+        FProgBar.Position := 1;
+        FProgBar.Step := 1;
+        FProgBar.Min  := 1;
+        FProgBar.Max  := 100;
+      end;
 
-  if IsStatusPanelAssigned then
-    FStatusPanel.Text := '';
+      if IsStatusPanelAssigned then
+        FStatusPanel.Text := '';
+    end
+  );
 end;
 
-constructor TGHRepoOpProgressBar.Create(const AProgBar: TProgressBar; const AStatusPanel: TStatusPanel);
+constructor TGHRepoOpProgressBar.Create(AProgBar: TProgressBar; AStatusPanel: TStatusPanel);
 begin
-  FPBAssigned := Assigned(AProgBar);
-  if IsPBAssigned then
-    FProgBar := AProgBar;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      FPBAssigned := Assigned(AProgBar);
+      if IsPBAssigned then
+        FProgBar := AProgBar;
 
-  FStatusPanelAssigned := Assigned(AStatusPanel);
-  if IsStatusPanelAssigned then
-    FStatusPanel := AStatusPanel;
+      FStatusPanelAssigned := Assigned(AStatusPanel);
+      if IsStatusPanelAssigned then
+        FStatusPanel := AStatusPanel;
+    end
+  );
+end;
+
+destructor TGHRepoOpProgressBar.Destroy;
+begin
+  FProgBar := nil;
+  FStatusPanel := nil;
+  inherited;
 end;
 
 function TGHRepoOpProgressBar.GetMax: Integer;
@@ -90,11 +113,16 @@ end;
 
 procedure TGHRepoOpProgressBar.Hide(const AClear: Boolean);
 begin
-  if IsPBAssigned then
-    FProgBar.Hide;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if IsPBAssigned then
+        FProgBar.Hide;
 
-  if AClear then
-    Clear;
+      if AClear then
+        Clear;
+    end
+  );
 end;
 
 function TGHRepoOpProgressBar.IsStatusPanelAssigned: Boolean;
@@ -109,49 +137,65 @@ end;
 
 procedure TGHRepoOpProgressBar.Max(const AValue: Integer);
 begin
-  if IsPBAssigned then
-  begin
-    FProgBar.Max := AValue;
-    Application.ProcessMessages;
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if IsPBAssigned then
+      begin
+        FProgBar.Max := AValue;
+      end;
+    end
+  );
 end;
 
 procedure TGHRepoOpProgressBar.SetInitialMsg(const Value: string);
 begin
-  FInitialMsg := Value;
-  FProgBar.Visible := True;
-  Application.ProcessMessages;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      FInitialMsg := Value;
+      FProgBar.Visible := True;
+    end
+  );
 end;
 
 procedure TGHRepoOpProgressBar.SetMessage(const AMsg: string; const AShowProgNum: Boolean);
 var
   LMsg: string;
 begin
-  if IsStatusPanelAssigned then
-  begin
-    if AMsg.IsEmpty then
-      LMsg := FInitialMsg
-    else
-      LMsg := AMsg;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if IsStatusPanelAssigned then
+      begin
+        if AMsg.IsEmpty then
+          LMsg := FInitialMsg
+        else
+          LMsg := AMsg;
 
-    if AShowProgNum then
-      LMsg := '[' + IntToStr(FProgBar.Position) + ' / ' + IntToStr(FProgBar.Max) + '] ' + LMsg;
+        if AShowProgNum then
+          LMsg := '[' + IntToStr(FProgBar.Position) + ' / ' + IntToStr(FProgBar.Max) + '] ' + LMsg;
 
-    FStatusPanel.Text := LMsg;
-    Application.ProcessMessages;
-  end;
+        FStatusPanel.Text := LMsg;
+      end;
+    end
+  );
 end;
 
 procedure TGHRepoOpProgressBar.Step(const AValue: Integer);
 begin
-  if IsPBAssigned then
-  begin
-    if AValue <= 1 then
-      FProgBar.StepIt
-    else
-      FProgBar.StepBy(AValue);
-    Application.ProcessMessages;
-  end;
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if IsPBAssigned then
+      begin
+        if AValue <= 1 then
+          FProgBar.StepIt
+        else
+          FProgBar.StepBy(AValue);
+      end;
+    end
+  );
 end;
 
 end.
