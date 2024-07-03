@@ -142,6 +142,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="Source\GHRepoOperations.Constants.pas"/>
         <DCCReference Include="Source\GHRepoOperations.TreeViewBuilder.pas"/>
         <DCCReference Include="Source\GHRepoOperations.Messages.pas"/>
+        <DCCReference Include="Source\GHRepoOperations.MainRT.pas"/>
+        <DCCReference Include="Source\GHRepoOperations.ProgBar.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

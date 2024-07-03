@@ -12,7 +12,9 @@ uses
   System.IOUtils,
   System.Threading,
   GHRepoOperations.GHCommands,
+  GHRepoOperations.MainRT,
   GHRepoOperations.Messages,
+  GHRepoOperations.ProgBar,
   GHRepoOperations.TreeViewBuilder;
 
 type
@@ -52,59 +54,25 @@ implementation
 procedure TFrmMain.btnRepoListClick(Sender: TObject);
 var
   LOrg, LTopic: string;
-  LTempRepoFileName, LTempBranchesFileName, LTempReleaseFileName: string;
+  LMainRT: TGHRepoOperationsRT;
   LRepoModels: TArray<TGHCliRepoModel>;
-  LModel: TGHCliRepoModel;
   I: Integer;
 begin
-  LTempRepoFileName := IncludeTrailingPathDelimiter(TPath.GetTempPath) + 'repoList.txt';
+  LOrg   := cbxOrganizations.Items[cbxOrganizations.ItemIndex];
+  LTopic := cbxTopics.Items[cbxTopics.ItemIndex];
+
+  LMainRT := TGHRepoOperationsRT.Create;
   try
-    LOrg   := cbxOrganizations.Items[cbxOrganizations.ItemIndex];
-    LTopic := cbxTopics.Items[cbxTopics.ItemIndex];
-
-    sbRepos.Panels[0].Text := Format(RS_Msg_PBar_ExtractRepos, [LOrg.QuotedString, LTopic.QuotedString]);
-
-    if TGHCliRepoCommand.RepoListAndLoad(LOrg, LTopic, LTempRepoFileName, LRepoModels) then
-    begin
-      pbLoadData.Step := 1;
-      pbLoadData.Min  := 1;
-      pbLoadData.Max  := Length(LRepoModels);
-      pbLoadData.Visible := True;
-
+    LMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
+    LRepoModels := LMainRT.ExtractReposInfo(LOrg, LTopic);
+    try
+      FillTreeView(LRepoModels);
+    finally
       for I := 0 to High(LRepoModels) do
-      begin
-        LModel := LRepoModels[I];
-
-        sbRepos.Panels[0].Text := Format(RS_Msg_PBar_ExtractRepoBranches, [LModel.FullName.QuotedString]);
-
-        LTempBranchesFileName := IncludeTrailingPathDelimiter(TPath.GetTempPath) + 'branchesList.txt';
-        if TGHCliRepoCommand.BranchesListAndLoad(LModel, LTempBranchesFileName) then
-        begin
-          sbRepos.Panels[0].Text := Format(RS_Msg_PBar_ExtractRepoTags, [LModel.FullName.QuotedString]);
-
-          LTempReleaseFileName := IncludeTrailingPathDelimiter(TPath.GetTempPath) + 'releaseList.txt';
-          TGHCliRepoCommand.ReleaseListAndLoad(LModel, LTempReleaseFileName);
-        end;
-
-        pbLoadData.StepIt;
-      end;
+        FreeAndNil(LRepoModels[I]);
     end;
-
-    FillTreeView(LRepoModels);
   finally
-    pbLoadData.Visible := False;
-
-    sbRepos.Panels[0].Text := '';
-
-    for I := 0 to High(LRepoModels) do
-      FreeAndNil(LRepoModels[I]);
-
-    if TFile.Exists(LTempRepoFileName) then
-      TFile.Delete(LTempRepoFileName);
-    if TFile.Exists(LTempBranchesFileName) then
-      TFile.Delete(LTempBranchesFileName);
-    if TFile.Exists(LTempReleaseFileName) then
-      TFile.Delete(LTempReleaseFileName);
+    FreeAndNil(LMainRT);
   end;
 end;
 

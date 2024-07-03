@@ -9,7 +9,9 @@ uses
   GHRepoOperations.Utils in 'Source\GHRepoOperations.Utils.pas',
   GHRepoOperations.Constants in 'Source\GHRepoOperations.Constants.pas',
   GHRepoOperations.TreeViewBuilder in 'Source\GHRepoOperations.TreeViewBuilder.pas',
-  GHRepoOperations.Messages in 'Source\GHRepoOperations.Messages.pas';
+  GHRepoOperations.Messages in 'Source\GHRepoOperations.Messages.pas',
+  GHRepoOperations.MainRT in 'Source\GHRepoOperations.MainRT.pas',
+  GHRepoOperations.ProgBar in 'Source\GHRepoOperations.ProgBar.pas';
 
 {$R *.res}
 
