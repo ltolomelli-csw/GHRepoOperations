@@ -3,7 +3,7 @@
 #
 # Resource files are binaries containing manifest, project icon and version info.
 # They can not be viewed as text or compared by diff-tools. Consider replacing them with .rc files.
-#*.res
+*.res
 #
 # Type library file (binary). In old Delphi versions it should be stored.
 # Since Delphi 2009 it is produced from .ridl file and can safely be ignored.
@@ -15,7 +15,7 @@
 #
 # Visual LiveBindings file. Added in Delphi XE2.
 # Uncomment this if you are not using LiveBindings Designer.
-#*.vlb
+*.vlb
 #
 # Deployment Manager configuration file for your project. Added in Delphi XE2.
 # Uncomment this if it is not mobile development and you do not use remote debug feature.
@@ -67,3 +67,14 @@ __recovery/
 
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
+
+# A .vrc is a temporary file created by Delphi MSBuild process to compile 
+# resources files (.res) which will be linked in the final binary output. It is passed to CodeGear Resource Compiler/Binder (cgrc.exe) and deleted after the build process.
+# https://stackoverflow.com/questions/19593566/what-is-a-vrc-file-how-is-is-generated-and-can-you-remove-it-using-the-ide
+
+*.vrc
+
+# When you build a project for a Windows target platform, RAD Studio automatically includes an 
+# application manifest file. You can use the default application manifest file as a base for your custom application manifest file:
+
+*.$manifest
