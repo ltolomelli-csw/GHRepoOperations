@@ -161,9 +161,11 @@ begin
 
       if SameText(LBranch, 'main') and (Length(LRepoModel.Tags) > 0) then
       begin
-        LTag := LRepoModel.Tags[J].Tag;
-        LReleaseType := LRepoModel.Tags[J].ReleaseType;
-        LPublishedDate := LRepoModel.Tags[J].PublishedDate
+        // devo considerare sempre il Model in posizione 0 perch� sono ordinati in
+        // modo decrescente (come su GitHub) e mi interessano quei valori
+        LTag := LRepoModel.Tags[0].Tag;
+        LReleaseType := LRepoModel.Tags[0].ReleaseType;
+        LPublishedDate := LRepoModel.Tags[0].PublishedDate;
       end
       else
       begin
