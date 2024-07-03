@@ -16,6 +16,7 @@ uses
   GHRepoOperations.Messages,
   GHRepoOperations.ProgBar,
   GHRepoOperations.TreeViewBuilder,
+  GHRepoOperations.Types,
   GHRepoOperations.Utils;
 
 type
@@ -31,17 +32,28 @@ type
     tvMain: TAdvTreeView;
     pbLoadData: TProgressBar;
     sbRepos: TStatusBar;
+    lblFunctions: TLabel;
+    cbxFunctions: TComboBox;
+    btnExecuteFunction: TButton;
+    rgNewMainTag: TRadioGroup;
     procedure btnRepoListClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure tvMainAfterUnCheckNode(Sender: TObject;
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
     procedure tvMainAfterCheckNode(Sender: TObject;
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
+    procedure rgNewMainTagClick(Sender: TObject);
+    procedure cbxFunctionsChange(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
+    procedure EnableBtnRepoList;
+    procedure EnableBtnExecuteFunction;
+    procedure EnableRadioButton;
+    function GetNewTagOperationFromSelection: TNewTagOperation;
+    procedure InitComponents;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -74,6 +86,11 @@ begin
   FMainRT.Start;
 end;
 
+procedure TFrmMain.cbxFunctionsChange(Sender: TObject);
+begin
+  EnableBtnExecuteFunction;
+end;
+
 constructor TFrmMain.Create(AOwner: TComponent);
 begin
   inherited;
@@ -86,13 +103,34 @@ begin
   inherited;
 end;
 
+procedure TFrmMain.EnableBtnExecuteFunction;
+begin
+  btnExecuteFunction.Enabled := (cbxFunctions.ItemIndex > -1);
+end;
+
+procedure TFrmMain.EnableBtnRepoList;
+begin
+  btnRepoList.Enabled := True;
+end;
+
+procedure TFrmMain.EnableRadioButton;
+begin
+  rgNewMainTag.Enabled := tvMain.Nodes.Count > 0;
+end;
+
 procedure TFrmMain.OnTerminateFillTreeView(Sender: TObject);
 begin
   try
     FillTreeView( FMainRT.RepoModels );
   finally
     TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
+    EnableRadioButton;
   end;
+end;
+
+procedure TFrmMain.rgNewMainTagClick(Sender: TObject);
+begin
+  FTreeViewBuilder.CalculateNewMainTags( GetNewTagOperationFromSelection );
 end;
 
 procedure TFrmMain.FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
@@ -108,8 +146,31 @@ end;
 
 procedure TFrmMain.FormShow(Sender: TObject);
 begin
+  InitComponents;
+end;
+
+function TFrmMain.GetNewTagOperationFromSelection: TNewTagOperation;
+begin
+  case rgNewMainTag.ItemIndex of
+    0: Result := ntoIncreaseMinor;
+    1: Result := ntoIncreaseFix;
+    else
+      Result := ntoNull;
+  end;
+end;
+
+procedure TFrmMain.InitComponents;
+begin
   cbxOrganizations.ItemIndex := 0;
   cbxTopics.ItemIndex := 0;
+
+  cbxFunctions.ItemIndex := -1;
+  rgNewMainTag.ItemIndex := -1;
+
+  EnableBtnRepoList;
+  EnableBtnExecuteFunction;
+  EnableRadioButton;
+
   sbRepos.Panels[0].Width := sbRepos.Width;
 end;
 

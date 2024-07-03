@@ -7,20 +7,21 @@ uses
   GHRepoOperations.Types;
 
 type
-  TTVNodeData = class
-    IsRoot: Boolean;
-    ShowCheckBox: Boolean;
-    Repository: string;
-    Branch: string;
-    Tag: string;
-    ReleaseType: TPairGHReleaseType;
-  end;
-
   TGHCliReleaseModel = class
     Tag: string;
     NewTag: string;
     ReleaseType: TPairGHReleaseType;
     PublishedDate: string;
+  end;
+
+  TTVNodeData = class
+    IsRoot: Boolean;
+    ShowCheckBox: Boolean;
+    Repository: string;
+    Branch: string;
+    ReleaseModel: TGHCliReleaseModel;
+  public
+    destructor Destroy; override;
   end;
 
   TGHCliRepoModel = class
@@ -51,6 +52,14 @@ end;
 function TGHCliRepoModel.FullName: string;
 begin
   Result := Organization + '/' + Name;
+end;
+
+{ TTVNodeData }
+
+destructor TTVNodeData.Destroy;
+begin
+  FreeAndNil(ReleaseModel);
+  inherited;
 end;
 
 end.

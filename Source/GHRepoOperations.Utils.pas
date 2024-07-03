@@ -16,6 +16,10 @@ type
     class function PairFromDescr(const ADescr: string): TPairGHReleaseType;
   end;
 
+  TGHMiscUtils = class
+    class function ConcatStrings(const AStringToConcat: TArray<string>; const ADelimiter: string): string;
+  end;
+
   TGHVCLUtils = class
     class procedure EnableControlsAndChilds(AControl: TWinControl; const AEnable, ANested: Boolean);
   end;
@@ -72,6 +76,25 @@ begin
         EnableControlsAndChilds(TWinControl(AControl.Controls[I]), AEnable, ANested);
     end;
     AControl.Controls[I].Enabled := AEnable;
+  end;
+end;
+
+{ TGHMiscUtils }
+
+class function TGHMiscUtils.ConcatStrings(const AStringToConcat: TArray<string>;
+  const ADelimiter: string): string;
+var
+  LStr: string;
+begin
+  Result := '';
+  for LStr in AStringToConcat do
+  begin
+    if LStr.IsEmpty then
+      Continue;
+    if Result.IsEmpty then
+      Result := LStr
+    else
+      Result := Result + ADelimiter + LStr;
   end;
 end;
 
