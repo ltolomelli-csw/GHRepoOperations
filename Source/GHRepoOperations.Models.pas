@@ -14,16 +14,6 @@ type
     PublishedDate: string;
   end;
 
-  TTVNodeData = class
-    IsRoot: Boolean;
-    ShowCheckBox: Boolean;
-    Repository: string;
-    Branch: string;
-    ReleaseModel: TGHCliReleaseModel;
-  public
-    destructor Destroy; override;
-  end;
-
   TGHCliRepoModel = class
     Organization: string;
     Name: string;
@@ -33,6 +23,16 @@ type
     destructor Destroy; override;
 
     function FullName: string;
+  end;
+
+  TTVNodeData = class
+    IsRoot: Boolean;
+    ShowCheckBox: Boolean;
+    RepoModel: TGHCliRepoModel;
+    Branch: string;
+    ReleaseModel: TGHCliReleaseModel;
+  public
+    destructor Destroy; override;
   end;
 
 implementation
@@ -58,6 +58,7 @@ end;
 
 destructor TTVNodeData.Destroy;
 begin
+  FreeAndNil(RepoModel);
   FreeAndNil(ReleaseModel);
   inherited;
 end;
