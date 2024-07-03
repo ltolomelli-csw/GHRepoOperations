@@ -12,6 +12,9 @@ resourcestring
   RS_Msg_PBar_ExtractRepoBranches = 'Estrazione branch repository %s';
   RS_Msg_PBar_ExtractRepoTags = 'Estrazione tag repository %s';
 
+  RS_Err_DescrReleaseTypeNotValid = 'Descrizione %s non gestita';
+  RS_Err_EnumReleaseTypeNotValid = 'Enumerato %s non gestito';
+
 implementation
 
 end.

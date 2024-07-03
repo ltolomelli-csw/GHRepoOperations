@@ -7,6 +7,7 @@ uses
   System.SysUtils,
   System.TypInfo,
   GHRepoOperations.Constants,
+  GHRepoOperations.Messages,
   GHRepoOperations.Types;
 
 type
@@ -25,31 +26,31 @@ implementation
 
 class function TGHReleaseTypeDecode.PairFromDescr(const ADescr: string): TPairGHReleaseType;
 begin
-  if SameText(ADescr, 'null') then
+  if SameText(ADescr, C_RELEASETYPE_NULL) then
     Result.Create(grtPreRelease, ADescr)
   else
   if ADescr.IsEmpty then
     Result.Create(grtNormal, ADescr)
   else
-  if SameText(ADescr, 'Latest') then
+  if SameText(ADescr, C_RELEASETYPE_LATEST) then
     Result.Create(grtLatest, ADescr)
   else
-  if SameText(ADescr, 'Pre-release') then
+  if SameText(ADescr, C_RELEASETYPE_PRERELEASE) then
     Result.Create(grtPreRelease, ADescr)
   else
-    raise Exception.CreateFmt('Descrizione %s non gestita', [ADescr.QuotedString]);
+    raise Exception.CreateFmt(RS_Err_DescrReleaseTypeNotValid, [ADescr.QuotedString]);
 end;
 
 class function TGHReleaseTypeDecode.PairFromEnum(const AEnum: TGHReleaseType): TPairGHReleaseType;
 begin
   case AEnum of
-    grtNull:   Result.Create(AEnum, 'null');
+    grtNull:   Result.Create(AEnum, C_RELEASETYPE_NULL);
     grtNormal: Result.Create(AEnum, '');
-    grtLatest: Result.Create(AEnum, 'Latest');
-    grtPreRelease: Result.Create(AEnum, 'Pre-release');
+    grtLatest: Result.Create(AEnum, C_RELEASETYPE_LATEST);
+    grtPreRelease: Result.Create(AEnum, C_RELEASETYPE_PRERELEASE);
     else
       raise Exception.CreateFmt(
-        'Enumerato %s non gestito', [GetEnumName(TypeInfo(TGHReleaseType), Ord(AEnum)).QuotedString]
+        RS_Err_EnumReleaseTypeNotValid, [GetEnumName(TypeInfo(TGHReleaseType), Ord(AEnum)).QuotedString]
       );
   end;
 end;
