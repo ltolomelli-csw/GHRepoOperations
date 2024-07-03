@@ -1,2 +1,2 @@
-# TagPusherGH
+# GHRepoOperations
 Programma per effettuare il push di tag in repository GitHub
