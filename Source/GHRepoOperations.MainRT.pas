@@ -18,17 +18,19 @@ uses
 type
   TGHRepoOperationsRT = class(TThread)
   private
+    FThreadOperation: TThreadOperation;
     FGHRepoOpProgressBar: IGHRepoOpProgressBar;
     FOrganization: string;
     FTopic: string;
     FRepoModels: TArray<TGHCliRepoModel>;
     function ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>; overload;
+    function ExtractReposInfo: TArray<TGHCliRepoModel>; overload;
   public
     destructor Destroy; override;
 
     procedure Execute; override;
-    function ExtractReposInfo: TArray<TGHCliRepoModel>; overload;
 
+    property ThreadOperation: TThreadOperation read FThreadOperation write FThreadOperation;
     property GHRepoOpProgressBar: IGHRepoOpProgressBar read FGHRepoOpProgressBar write FGHRepoOpProgressBar;
     property Organization: string read FOrganization write FOrganization;
     property Topic: string read FTopic write FTopic;
@@ -52,7 +54,12 @@ procedure TGHRepoOperationsRT.Execute;
 begin
   inherited;
   FreeOnTerminate := True;
-  FRepoModels := ExtractReposInfo;
+  case ThreadOperation of
+    toRepoExtraction:
+      FRepoModels := ExtractReposInfo;
+    else
+      Exit;
+  end;
 end;
 
 function TGHRepoOperationsRT.ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>;

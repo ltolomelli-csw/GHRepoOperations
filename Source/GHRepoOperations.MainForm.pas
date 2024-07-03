@@ -76,6 +76,7 @@ begin
   // utilizzo una variabile globale alla classe così da farci riferimento
   // nell'evento OnTerminate
   FMainRT := TGHRepoOperationsRT.Create(True);
+  FMainRT.ThreadOperation := TThreadOperation.toRepoExtraction;
   FMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
   FMainRT.Organization := LOrg;
   FMainRT.Topic := LTopic;

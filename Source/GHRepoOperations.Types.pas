@@ -6,6 +6,7 @@ uses
   System.Generics.Collections;
 
 type
+  TThreadOperation = (toNull, toRepoExtraction, toTagPush);
   TGHReleaseType = (grtNull, grtNormal, grtLatest, grtPreRelease);
   TNewTagOperation = (ntoNull, ntoIncreaseMinor, ntoIncreaseFix);
 
