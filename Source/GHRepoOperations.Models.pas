@@ -16,18 +16,18 @@ type
     ReleaseType: TPairGHReleaseType;
   end;
 
-  TGHCliTagModel = class
+  TGHCliReleaseModel = class
     Tag: string;
     NewTag: string;
     ReleaseType: TPairGHReleaseType;
+    PublishedDate: string;
   end;
 
   TGHCliRepoModel = class
     Organization: string;
     Name: string;
     Branches: TArray<string>;
-    Tags: TArray<TGHCliTagModel>;
-
+    Tags: TArray<TGHCliReleaseModel>;
   public
     destructor Destroy; override;
 

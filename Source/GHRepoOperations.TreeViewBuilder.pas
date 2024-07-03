@@ -6,6 +6,7 @@ uses
   System.Classes,
   System.SysUtils,
   System.StrUtils,
+  System.Variants,
   AdvTreeView,
   AdvTreeViewBase,
   AdvTreeViewData,
@@ -32,8 +33,9 @@ type
 
     function AddTreeViewNode(AParent: TAdvTreeViewNode; const ARepository: string;
       const AShowCheckBox: Boolean): TAdvTreeViewNode; overload;
-    function AddTreeViewNode(AParent: TAdvTreeViewNode; const ARepository, ABranch, ATag: string;
-      const AReleaseType: TPairGHReleaseType; const AShowCheckBox: Boolean): TAdvTreeViewNode; overload;
+    function AddTreeViewNode(AParent: TAdvTreeViewNode; const ARepository, ABranch, ATag, APublishedDate: string;
+      const AReleaseType: TPairGHReleaseType;
+      const AShowCheckBox: Boolean): TAdvTreeViewNode; overload;
 
     class function GetTVNodeData(ANode: TAdvTreeViewNode; out ANodeData: TTVNodeData): Boolean;
 
@@ -47,11 +49,11 @@ implementation
 function TTreeViewBuilder.AddTreeViewNode(AParent: TAdvTreeViewNode;
   const ARepository: string; const AShowCheckBox: Boolean): TAdvTreeViewNode;
 begin
-  Result := AddTreeViewNode(AParent, ARepository, '', '', TGHReleaseTypeDecode.PairFromEnum(grtNull), AShowCheckBox);
+  Result := AddTreeViewNode(AParent, ARepository, '', '', '', TGHReleaseTypeDecode.PairFromEnum(grtNull), AShowCheckBox);
 end;
 
 function TTreeViewBuilder.AddTreeViewNode(AParent: TAdvTreeViewNode;
-  const ARepository, ABranch, ATag: string; const AReleaseType: TPairGHReleaseType;
+  const ARepository, ABranch, ATag, APublishedDate: string; const AReleaseType: TPairGHReleaseType;
   const AShowCheckBox: Boolean): TAdvTreeViewNode;
 var
   LNodeData: TTVNodeData;
@@ -71,6 +73,8 @@ begin
   Result.Text[2] := EmptyStr;
   if AReleaseType.Key <> grtNull then
     Result.Text[2] := AReleaseType.Value;
+
+  Result.Text[3] := APublishedDate;
 end;
 
 constructor TTreeViewBuilder.Create(ATreeView: TAdvTreeView);
@@ -139,7 +143,7 @@ end;
 procedure TTreeViewBuilder.LoadRepos(const ARepoModels: TArray<TGHCliRepoModel>);
 var
   I, J: Integer;
-  LBranch, LTag: string;
+  LBranch, LTag, LPublishedDate: string;
   LReleaseType: TPairGHReleaseType;
   LRepoModel: TGHCliRepoModel;
   LNodeRepo: TAdvTreeViewNode;
@@ -157,16 +161,18 @@ begin
 
       if SameText(LBranch, 'main') and (Length(LRepoModel.Tags) > 0) then
       begin
-        LTag := LRepoModel.Tags[0].Tag;
-        LReleaseType := LRepoModel.Tags[0].ReleaseType;
+        LTag := LRepoModel.Tags[J].Tag;
+        LReleaseType := LRepoModel.Tags[J].ReleaseType;
+        LPublishedDate := LRepoModel.Tags[J].PublishedDate
       end
       else
       begin
         LTag := EmptyStr;
         LReleaseType := TGHReleaseTypeDecode.PairFromEnum(grtNull);
+        LPublishedDate := '';
       end;
 
-      AddTreeViewNode(LNodeRepo, LRepoModel.Name, LBranch, LTag, LReleaseType, True);
+      AddTreeViewNode(LNodeRepo, LRepoModel.Name, LBranch, LTag, LPublishedDate, LReleaseType, True);
     end;
   end;
 end;
@@ -180,7 +186,9 @@ begin
   FTreeView.Columns.Add;
   FTreeView.Columns[2].Text := RS_Msg_TreeColTitle_ReleaseType;
   FTreeView.Columns.Add;
-  FTreeView.Columns[3].Text := RS_Msg_TreeColTitle_NewTag;
+  FTreeView.Columns[3].Text := RS_Msg_TreeColTitle_PublishedDate;
+  FTreeView.Columns.Add;
+  FTreeView.Columns[4].Text := RS_Msg_TreeColTitle_NewTag;
 
   FTreeView.ColumnsAppearance.Stretch := True;
   FTreeView.ColumnsAppearance.StretchAll := True;

@@ -20,12 +20,12 @@ type
       out ARes: TStringList): Boolean; overload;
 
     class function LoadRepoNamesInModel(const ASL: TStringList): TArray<TGHCliRepoModel>;
-    class function LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliTagModel>;
+    class function LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliReleaseModel>;
     class function LoadRepoBranchesInModel(const ASL: TStringList): TArray<string>;
   public
     class function RepoListAndLoad(const AOrganization, ATopic: string; out ARepoModels: TArray<TGHCliRepoModel>): Boolean;
     class function BranchesListAndLoad(const ARepoFullName: string; out ABranches: TArray<string>): Boolean; overload;
-    class function ReleaseListAndLoad(const ARepoFullName: string; out ATags: TArray<TGHCliTagModel>): Boolean;
+    class function ReleaseListAndLoad(const ARepoFullName: string; out ATags: TArray<TGHCliReleaseModel>): Boolean;
   end;
 
 implementation
@@ -36,7 +36,7 @@ uses
 { TGHCliRepoCommand }
 
 class function TGHCliRepoCommand.ReleaseListAndLoad(const ARepoFullName: string;
-  out ATags: TArray<TGHCliTagModel>): Boolean;
+  out ATags: TArray<TGHCliReleaseModel>): Boolean;
 var
   LCMD: string;
   LSL: TStringList;
@@ -207,10 +207,10 @@ begin
   end;
 end;
 
-class function TGHCliRepoCommand.LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliTagModel>;
+class function TGHCliRepoCommand.LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliReleaseModel>;
 var
   I: Integer;
-  LModel: TGHCliTagModel;
+  LModel: TGHCliReleaseModel;
   LArr: TArray<string>;
 begin
   SetLength(Result, ASL.Count);
@@ -219,9 +219,10 @@ begin
   begin
     LArr := ASL[I].Split([#9]);
 
-    LModel := TGHCliTagModel.Create;
+    LModel := TGHCliReleaseModel.Create;
     LModel.Tag := LArr[0];
     LModel.ReleaseType := TGHReleaseTypeDecode.PairFromDescr(LArr[1]);
+    LModel.PublishedDate := LArr[3];
 
     Result[I] := LModel;
   end;
