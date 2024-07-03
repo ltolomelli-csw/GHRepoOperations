@@ -6,35 +6,26 @@ uses
   Winapi.Windows,
   Winapi.ShellAPI,
   System.Classes,
+  System.IOUtils,
   System.StrUtils,
   System.SysUtils,
   System.Generics.Collections,
   GHRepoOperations.Models;
 
-function CSExec(Fn, Pa: string; Sw: Word; WaitExec: Boolean): DWord;
-
 type
   TGHCliRepoCommand = class
   private
-    class function LoadRepoNamesInModel(const ATempFileName: string): TArray<TGHCliRepoModel>;
-    class function LoadRepoReleasesInModel(const ATempFileName: string): TArray<TGHCliTagModel>;
-    class function LoadRepoBranchesInModel(const ATempFileName: string): TArray<string>;
+    class function GetCmdOutput(const ACommandLine, AWorkDir: string): string; overload;
+    class function GetCmdOutput(const ACommandLine, AWorkDir: string; const ADelimiter: Char;
+      out ARes: TStringList): Boolean; overload;
+
+    class function LoadRepoNamesInModel(const ASL: TStringList): TArray<TGHCliRepoModel>;
+    class function LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliTagModel>;
+    class function LoadRepoBranchesInModel(const ASL: TStringList): TArray<string>;
   public
-    class function RepoList(const AOrganization, ATopic: string; const ATempFileName: string): Boolean;
-    class function RepoListAndLoad(const AOrganization, ATopic: string; const ATempFileName: string;
-      out ARepoModels: TArray<TGHCliRepoModel>): Boolean;
-
-    class function ReleaseList(const ARepoFullName, ATempFileName: string): Boolean; overload;
-    class function ReleaseListAndLoad(const ARepoFullName, ATempFileName: string): TArray<TGHCliTagModel>; overload;
-
-    class function ReleaseList(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean; overload;
-    class function ReleaseListAndLoad(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean; overload;
-    class function ReleaseListAndLoad2(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): TArray<TGHCliTagModel>;
-
-    class function BranchesList(const ARepoFullName, ATempFileName: string): Boolean; overload;
-    class function BranchesListAndLoad(const ARepoFullName, ATempFileName: string): TArray<string>; overload;
-    class function BranchesList(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean; overload;
-    class function BranchesListAndLoad(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean; overload;
+    class function RepoListAndLoad(const AOrganization, ATopic: string; out ARepoModels: TArray<TGHCliRepoModel>): Boolean;
+    class function BranchesListAndLoad(const ARepoFullName: string; out ABranches: TArray<string>): Boolean; overload;
+    class function ReleaseListAndLoad(const ARepoFullName: string; out ATags: TArray<TGHCliTagModel>): Boolean;
   end;
 
 implementation
@@ -44,311 +35,196 @@ uses
 
 { TGHCliRepoCommand }
 
-class function TGHCliRepoCommand.LoadRepoReleasesInModel(const ATempFileName: string): TArray<TGHCliTagModel>;
+class function TGHCliRepoCommand.ReleaseListAndLoad(const ARepoFullName: string;
+  out ATags: TArray<TGHCliTagModel>): Boolean;
 var
+  LCMD: string;
   LSL: TStringList;
-  LArr: TArray<string>;
-  I: Integer;
-  LModel: TGHCliTagModel;
 begin
-  LSL := TStringList.Create;
+  Result := False;
+  LCMD := 'gh release list -R ' + ARepoFullName;
   try
-    try
-      LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-    except
-      on E: EFOpenError do
-      begin
-        // in caso di errore, aspetto 1 secondo e ci riprovo
-        Sleep(1000);
-        LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-      end;
-    end;
-    SetLength(Result, LSL.Count);
-
-    for I := 0 to LSL.Count -1 do
+    // delimito con il solo carattere CR per avere ogni riga su un elemento della StringList
+    if GetCmdOutput(LCMD, IncludeTrailingPathDelimiter(TPath.GetTempPath), #10, LSL) then
     begin
-      LArr := LSL[I].Split([#9]);
-
-      LModel := TGHCliTagModel.Create;
-      LModel.Tag := LArr[0];
-      LModel.ReleaseType := TGHReleaseTypeDecode.PairFromDescr(LArr[1]);
-
-      Result[I] := LModel;
+      ATags := LoadRepoReleasesInModel(LSL);
+      Result := Length(ATags) > 0;
     end;
   finally
     FreeAndNil(LSL);
   end;
 end;
 
-class function TGHCliRepoCommand.ReleaseList(var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean;
-var
-  LRes: Integer;
-  LCMD: string;
-begin
-  LCMD := 'gh release list -R ' + ARepoModel.FullName + ' > ' + ATempFileName;
-  LRes := ShellExecute(0, nil,
-            'cmd.exe',
-            PWideChar('/K ' + LCMD), nil,
-            SW_HIDE
-          );
-  Result := LRes > 32;
-  Sleep(300);
-end;
-
-class function TGHCliRepoCommand.ReleaseList(const ARepoFullName, ATempFileName: string): Boolean;
-var
-  LRes: Integer;
-  LCMD: string;
-begin
-  LCMD := 'gh release list -R ' + ARepoFullName + ' > ' + ATempFileName;
-  LRes := ShellExecute(0, nil,
-            'cmd.exe',
-            PWideChar('/K ' + LCMD), nil,
-            SW_HIDE
-          );
-  Result := LRes > 32;
-  Sleep(300);
-end;
-
-class function TGHCliRepoCommand.ReleaseListAndLoad(
-  var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean;
-begin
-  Result := ReleaseList(ARepoModel, ATempFileName);
-  if Result then
-    ARepoModel.Tags := LoadRepoReleasesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.ReleaseListAndLoad(const ARepoFullName,
-  ATempFileName: string): TArray<TGHCliTagModel>;
-begin
-  if ReleaseList(ARepoFullName, ATempFileName) then
-    Result := LoadRepoReleasesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.ReleaseListAndLoad2(
-  var ARepoModel: TGHCliRepoModel;
-  const ATempFileName: string): TArray<TGHCliTagModel>;
-begin
-  if ReleaseList(ARepoModel, ATempFileName) then
-    Result := LoadRepoReleasesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.RepoList(const AOrganization, ATopic: string; const ATempFileName: string): Boolean;
-var
-  LRes: Integer;
-  LCMD: string;
-begin
-  LCMD := 'gh repo list ' + AOrganization + ' -L 100 --topic ' + ATopic + ' > ' + ATempFileName;
-  LRes := ShellExecute(0, nil,
-            'cmd.exe',
-            PWideChar('/K ' + LCMD), nil,
-            SW_HIDE
-          );
-  Result := LRes > 32;
-  Sleep(300);
-end;
-
-class function TGHCliRepoCommand.RepoListAndLoad(const AOrganization, ATopic: string; const ATempFileName: string;
+class function TGHCliRepoCommand.RepoListAndLoad(const AOrganization, ATopic: string;
   out ARepoModels: TArray<TGHCliRepoModel>): Boolean;
-begin
-  Result := RepoList(AOrganization, ATopic, ATempFileName);
-  if Result then
-    ARepoModels := LoadRepoNamesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.BranchesList(var ARepoModel: TGHCliRepoModel;
-  const ATempFileName: string): Boolean;
 var
-  LRes: Integer;
   LCMD: string;
-begin
-  LCMD := 'gh api repos/' + ARepoModel.FullName + '/branches -q ".[].name" > ' + ATempFileName;
-  LRes := ShellExecute(0, nil,
-            'cmd.exe',
-            PWideChar('/K ' + LCMD), nil,
-            SW_HIDE
-          );
-  Result := LRes > 32;
-  Sleep(300);
-end;
-
-class function TGHCliRepoCommand.BranchesListAndLoad(const ARepoFullName,
-  ATempFileName: string): TArray<string>;
-begin
-  if BranchesList(ARepoFullName, ATempFileName) then
-    Result := LoadRepoBranchesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.BranchesList(const ARepoFullName, ATempFileName: string): Boolean;
-var
-  LRes: Integer;
-  LCMD: string;
-begin
-  LCMD := 'gh api repos/' + ARepoFullName + '/branches -q ".[].name" > ' + ATempFileName;
-  LRes := ShellExecute(0, nil,
-            'cmd.exe',
-            PWideChar('/K ' + LCMD), nil,
-            SW_HIDE
-          );
-  Result := LRes > 32;
-  Sleep(300);
-end;
-
-class function TGHCliRepoCommand.BranchesListAndLoad(
-  var ARepoModel: TGHCliRepoModel; const ATempFileName: string): Boolean;
-begin
-  Result := BranchesList(ARepoModel, ATempFileName);
-  if Result then
-    ARepoModel.Branches := LoadRepoBranchesInModel(ATempFileName);
-end;
-
-class function TGHCliRepoCommand.LoadRepoBranchesInModel(const ATempFileName: string): TArray<string>;
-var
   LSL: TStringList;
-  I: Integer;
 begin
-  LSL := TStringList.Create;
+  Result := False;
+  LCMD := 'gh repo list ' + AOrganization + ' -L 100 --topic ' + ATopic;
   try
-    try
-      LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-    except
-      on E: EFOpenError do
-      begin
-        // in caso di errore, aspetto 1 secondo e ci riprovo
-        Sleep(1000);
-        LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-      end;
-    end;
-
-    for I := 0 to LSL.Count -1 do
+    // delimito con il solo carattere CR per avere ogni riga su un elemento della StringList
+    if GetCmdOutput(LCMD, IncludeTrailingPathDelimiter(TPath.GetTempPath), #10, LSL) then
     begin
-      if LSL[I].StartsWith('6.') or SameText(LSL[I], 'main') then
-      begin
-        SetLength(Result, Length(Result) + 1);
-        Result[High(Result)] := LSL[I];
-      end;
+      ARepoModels := LoadRepoNamesInModel(LSL);
+      Result := Length(ARepoModels) > 0;
     end;
   finally
     FreeAndNil(LSL);
   end;
 end;
 
-class function TGHCliRepoCommand.LoadRepoNamesInModel(const ATempFileName: string): TArray<TGHCliRepoModel>;
+class function TGHCliRepoCommand.BranchesListAndLoad(const ARepoFullName: string; out ABranches: TArray<string>): Boolean;
 var
+  LCMD: string;
   LSL: TStringList;
-  LArr, LArrName: TArray<string>;
+begin
+  Result := False;
+  LCMD := 'gh api repos/' + ARepoFullName + '/branches -q ".[].name" ';
+  try
+    // delimito con il solo carattere CR per avere ogni riga su un elemento della StringList
+    if GetCmdOutput(LCMD, IncludeTrailingPathDelimiter(TPath.GetTempPath), #10, LSL) then
+    begin
+      ABranches := LoadRepoBranchesInModel(LSL);
+      Result := Length(ABranches) > 0;
+    end;
+  finally
+    FreeAndNil(LSL);
+  end;
+end;
+
+class function TGHCliRepoCommand.GetCmdOutput(const ACommandLine, AWorkDir: string;
+  const ADelimiter: Char; out ARes: TStringList): Boolean;
+var
+  LCMDRes: string;
+begin
+  LCMDRes := GetCmdOutput(ACommandLine, AWorkDir);
+  ARes := TStringList.Create;
+  try
+    ARes.StrictDelimiter := True;
+    ARes.Delimiter := ADelimiter;
+    ARes.DelimitedText := LCMDRes;
+    // Utilizzando GetCmdOutput, la StringList che valorizzo
+    // ha un elemento in più vuoto che elimino per comodità
+    if (ARes.Count > 0) and (ARes[ARes.Count -1].Trim.IsEmpty) then
+      ARes.Delete(ARes.Count - 1);
+  except
+    begin
+      FreeAndNil(ARes);
+      raise;
+    end;
+  end;
+  Result := ARes.Count > 0;
+end;
+
+class function TGHCliRepoCommand.GetCmdOutput(const ACommandLine, AWorkDir: string): string;
+var
+  LSA: TSecurityAttributes;
+  LSI: TStartupInfo;
+  LPI: TProcessInformation;
+  LStdOutPipeRead, StdOutPipeWrite: THandle;
+  LWasOK: Boolean;
+  LBuffer: array[0..255] of AnsiChar;
+  LBytesRead: Cardinal;
+  LWorkDir: string;
+  LHandle: Boolean;
+begin
+  Result := '';
+  LSA.nLength := SizeOf(LSA);
+  LSA.bInheritHandle := True;
+  LSA.lpSecurityDescriptor := nil;
+  CreatePipe(LStdOutPipeRead, StdOutPipeWrite, @LSA, 0);
+  try
+    FillChar(LSI, SizeOf(LSI), 0);
+    LSI.cb := SizeOf(LSI);
+    LSI.dwFlags := STARTF_USESHOWWINDOW or STARTF_USESTDHANDLES;
+    LSI.wShowWindow := SW_HIDE;
+    LSI.hStdInput := GetStdHandle(STD_INPUT_HANDLE); // don't redirect stdin
+    LSI.hStdOutput := StdOutPipeWrite;
+    LSI.hStdError := StdOutPipeWrite;
+
+    LWorkDir := AWorkDir;
+    LHandle := CreateProcess(nil, PChar('cmd.exe /C ' + ACommandLine),
+                            nil, nil, True, 0, nil,
+                            PChar(LWorkDir), LSI, LPI);
+    CloseHandle(StdOutPipeWrite);
+    if LHandle then
+    begin
+      try
+        repeat
+          LWasOK := ReadFile(LStdOutPipeRead, LBuffer, 255, LBytesRead, nil);
+          if LBytesRead > 0 then
+          begin
+            LBuffer[LBytesRead] := #0;
+            Result := Result + string(LBuffer); // altrimenti warning di conversione implicita
+          end;
+        until not LWasOK or (LBytesRead = 0);
+        WaitForSingleObject(LPI.hProcess, INFINITE);
+      finally
+        CloseHandle(LPI.hThread);
+        CloseHandle(LPI.hProcess);
+      end;
+    end;
+  finally
+    CloseHandle(LStdOutPipeRead);
+  end;
+end;
+
+class function TGHCliRepoCommand.LoadRepoBranchesInModel(const ASL: TStringList): TArray<string>;
+var
+  I: Integer;
+begin
+  SetLength(Result, 0);
+  for I := 0 to ASL.Count -1 do
+  begin
+    if ASL[I].StartsWith('6.') or SameText(ASL[I], 'main') then
+    begin
+      SetLength(Result, Length(Result) + 1);
+      Result[High(Result)] := ASL[I];
+    end;
+  end;
+end;
+
+class function TGHCliRepoCommand.LoadRepoNamesInModel(const ASL: TStringList): TArray<TGHCliRepoModel>;
+var
   I: Integer;
   LModel: TGHCliRepoModel;
+  LArr, LArrName: TArray<string>;
 begin
-  LSL := TStringList.Create;
-  try
-    try
-      LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-    except
-      on E: EFOpenError do
-      begin
-        // in caso di errore, aspetto 1 secondo e ci riprovo
-        Sleep(1000);
-        LSL.LoadFromFile(ATempFileName, TEncoding.UTF8);
-      end;
-    end;
-    SetLength(Result, LSL.Count);
+  SetLength(Result, ASL.Count);
 
-    for I := 0 to LSL.Count -1 do
-    begin
-      LArr := LSL[I].Split([#9]);
-      LArrName := LArr[0].Split(['/']);
+  for I := 0 to ASL.Count -1 do
+  begin
+    LArr := ASL[I].Split([#9]);
+    LArrName := LArr[0].Split(['/']);
 
-      LModel := TGHCliRepoModel.Create;
-      LModel.Organization := LArrName[0];
-      LModel.Name := LArrName[1];
+    LModel := TGHCliRepoModel.Create;
+    LModel.Organization := LArrName[0];
+    LModel.Name := LArrName[1];
 
-      Result[I] := LModel;
-    end;
-  finally
-    FreeAndNil(LSL);
+    Result[I] := LModel;
   end;
 end;
 
-function CSExec(Fn, Pa: string; Sw: Word; WaitExec: Boolean): DWord;
+class function TGHCliRepoCommand.LoadRepoReleasesInModel(const ASL: TStringList): TArray<TGHCliTagModel>;
 var
-  LStartInfo: TStartUpInfo;
-  LProcInfo: TProcessInformation;
-  LSt: DWord;
-  LEc: LongInt;
-  LEr: DWord;
+  I: Integer;
+  LModel: TGHCliTagModel;
+  LArr: TArray<string>;
 begin
-  // initialize to avoid warnings
-  LSt := 0;
-  //LEr := 0;
+  SetLength(Result, ASL.Count);
 
-  // Azzero l'ultimo errore
-  SetLastError(0);
-
-  // setting the TStartUpInfo record
-  with LStartInfo do
+  for I := 0 to ASL.Count -1 do
   begin
-    cb := sizeof(LStartInfo);
-    lpReserved := nil;
-    lpDesktop := nil;
-    lpTitle := nil;
-    dwX := STARTF_USEPOSITION;
-    dwY := STARTF_USEPOSITION;
-    dwXSize := STARTF_USESIZE;
-    dwYSize := STARTF_USESIZE;
-    dwXCountChars := STARTF_USECOUNTCHARS;
-    dwYCountChars := STARTF_USECOUNTCHARS;
-    dwFillAttribute := FOREGROUND_BLUE;
-    dwFlags := STARTF_USESHOWWINDOW or STARTF_FORCEONFEEDBACK;
-    wShowWindow := Sw;
-    cbReserved2 := 0;
-    lpReserved2 := nil;
-    hStdInput := 0;
-    hStdOutput := 0;
-    hStdError := 0;
+    LArr := ASL[I].Split([#9]);
+
+    LModel := TGHCliTagModel.Create;
+    LModel.Tag := LArr[0];
+    LModel.ReleaseType := TGHReleaseTypeDecode.PairFromDescr(LArr[1]);
+
+    Result[I] := LModel;
   end;
-
-  if Trim(Fn) = '' then
-    CreateProcess(nil, PChar(Pa),
-                  nil, nil, False,
-                  CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS,
-                  nil, nil, LStartInfo, LProcInfo)
-  Else
-    CreateProcess(PChar(Fn), PChar(Pa),
-                  nil, nil, False,
-                  CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS,
-                  nil, nil, LStartInfo, LProcInfo);
-
-  // wait the completation flag
-  if WaitExec then
-  begin
-    repeat
-      GetExitCodeProcess(LProcInfo.hProcess, LSt);
-      Sleep(3000);
-    until (LSt<>STILL_ACTIVE);
-
-    GetExitCodeProcess(LProcInfo.hProcess, LSt);
-    //LEr := GetLastError;
-    LEr := Integer(LSt);
-
-    LEc := 0;
-    TerminateProcess(LProcInfo.hProcess, LEc);
-  end
-  else
-  begin
-    GetExitCodeProcess(LProcInfo.hProcess, LSt);
-    //LEr := GetLastError;
-    LEr := Integer(LSt);
-  end;
-
-  try
-    // Clean up the handles.
-    CloseHandle(LProcInfo.hProcess);
-    CloseHandle(LProcInfo.hThread);
-  except
-  end;
-
-  Result := LEr;
 end;
 
 end.
