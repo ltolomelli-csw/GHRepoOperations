@@ -13,6 +13,11 @@ resourcestring
   RS_Msg_PBar_ExtractRepoBranches = 'Estrazione branch repository %s';
   RS_Msg_PBar_ExtractRepoTags = 'Estrazione tag repository %s';
 
+  RS_Msg_PBar_CloneRepo = 'Clonazione repository %s';
+  RS_Msg_PBar_CheckoutBranch = 'Checkout branch %s';
+  RS_Msg_PBar_CreateNewTag = 'Creazione nuovo tag %s';
+  RS_Msg_PBar_PushTag = 'Push nuovo tag %s';
+
   RS_Err_DescrReleaseTypeNotValid = 'Descrizione %s non gestita';
   RS_Err_EnumReleaseTypeNotValid = 'Enumerato %s non gestito';
 

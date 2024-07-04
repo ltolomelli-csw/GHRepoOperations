@@ -24,18 +24,19 @@ type
     pnlAll: TPanel;
     pnlTop: TPanel;
     pnlMain: TPanel;
-    cbxOrganizations: TComboBox;
-    btnRepoList: TButton;
-    lblOrganizations: TLabel;
-    lblTopics: TLabel;
-    cbxTopics: TComboBox;
     tvMain: TAdvTreeView;
     pbLoadData: TProgressBar;
     sbRepos: TStatusBar;
-    lblFunctions: TLabel;
-    cbxFunctions: TComboBox;
-    btnExecuteFunction: TButton;
+    pnlMainOptions: TPanel;
+    cbxOrganizations: TComboBox;
+    cbxTopics: TComboBox;
+    lblOrganizations: TLabel;
+    lblTopics: TLabel;
+    pcFunctions: TPageControl;
+    tbsPushNewTag: TTabSheet;
     rgNewMainTag: TRadioGroup;
+    btnRepoList: TButton;
+    btnExecuteFunction: TButton;
     procedure btnRepoListClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure tvMainAfterUnCheckNode(Sender: TObject;
@@ -43,7 +44,6 @@ type
     procedure tvMainAfterCheckNode(Sender: TObject;
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
     procedure rgNewMainTagClick(Sender: TObject);
-    procedure cbxFunctionsChange(Sender: TObject);
     procedure btnExecuteFunctionClick(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
@@ -51,10 +51,11 @@ type
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
     procedure EnableBtnRepoList;
-    procedure EnableBtnExecuteFunction;
     procedure EnableRadioButton;
     function GetNewTagOperationFromSelection: TNewTagOperation;
     procedure InitComponents;
+
+    procedure InitCompPushNewTag;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -125,11 +126,6 @@ begin
   FMainRT.Start;
 end;
 
-procedure TFrmMain.cbxFunctionsChange(Sender: TObject);
-begin
-  EnableBtnExecuteFunction;
-end;
-
 constructor TFrmMain.Create(AOwner: TComponent);
 begin
   inherited;
@@ -140,11 +136,6 @@ destructor TFrmMain.Destroy;
 begin
   FreeAndNil(FTreeViewBuilder);
   inherited;
-end;
-
-procedure TFrmMain.EnableBtnExecuteFunction;
-begin
-  btnExecuteFunction.Enabled := (cbxFunctions.ItemIndex > -1);
 end;
 
 procedure TFrmMain.EnableBtnRepoList;
@@ -203,14 +194,17 @@ begin
   cbxOrganizations.ItemIndex := 0;
   cbxTopics.ItemIndex := 0;
 
-  cbxFunctions.ItemIndex := -1;
-  rgNewMainTag.ItemIndex := -1;
+  InitCompPushNewTag;
 
   EnableBtnRepoList;
-  EnableBtnExecuteFunction;
   EnableRadioButton;
 
   sbRepos.Panels[0].Width := sbRepos.Width;
+end;
+
+procedure TFrmMain.InitCompPushNewTag;
+begin
+  rgNewMainTag.ItemIndex := -1;
 end;
 
 procedure TFrmMain.tvMainAfterCheckNode(Sender: TObject;

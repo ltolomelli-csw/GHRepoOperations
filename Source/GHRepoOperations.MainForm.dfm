@@ -12,6 +12,7 @@ object FrmMain: TFrmMain
   Font.Style = []
   OldCreateOrder = True
   Position = poMainFormCenter
+  WindowState = wsMaximized
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -26,111 +27,118 @@ object FrmMain: TFrmMain
       Left = 1
       Top = 1
       Width = 1149
-      Height = 120
+      Height = 232
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
-      object lblOrganizations: TLabel
-        Left = 10
-        Top = 13
-        Width = 76
-        Height = 13
-        Caption = 'lblOrganizations'
-      end
-      object lblTopics: TLabel
-        Left = 271
-        Top = 13
-        Width = 40
-        Height = 13
-        Caption = 'lblTopics'
-      end
-      object lblFunctions: TLabel
-        Left = 10
-        Top = 74
-        Width = 56
-        Height = 13
-        Caption = 'lblFunctions'
-      end
-      object cbxOrganizations: TComboBox
-        Left = 10
-        Top = 32
-        Width = 255
-        Height = 21
+      object pnlMainOptions: TPanel
+        Left = 0
+        Top = 0
+        Width = 1149
+        Height = 73
+        Align = alTop
         TabOrder = 0
-        Text = 'cbxOrganizations'
-        Items.Strings = (
-          'centrosoftware-dev-custom'
-          'centrosoftware-dev')
+        object lblOrganizations: TLabel
+          Left = 10
+          Top = 13
+          Width = 76
+          Height = 13
+          Caption = 'lblOrganizations'
+        end
+        object lblTopics: TLabel
+          Left = 271
+          Top = 13
+          Width = 40
+          Height = 13
+          Caption = 'lblTopics'
+        end
+        object cbxOrganizations: TComboBox
+          Left = 10
+          Top = 32
+          Width = 255
+          Height = 21
+          TabOrder = 0
+          Text = 'cbxOrganizations'
+          Items.Strings = (
+            'centrosoftware-dev-custom'
+            'centrosoftware-dev')
+        end
+        object cbxTopics: TComboBox
+          Left = 271
+          Top = 32
+          Width = 255
+          Height = 21
+          TabOrder = 1
+          Text = 'cbxTopics'
+          Items.Strings = (
+            'tools'
+            'addon'
+            'clienti'
+            'verticali'
+            'test')
+        end
+        object btnRepoList: TButton
+          Left = 532
+          Top = 30
+          Width = 75
+          Height = 25
+          Caption = 'btnRepoList'
+          TabOrder = 2
+          OnClick = btnRepoListClick
+        end
       end
-      object btnRepoList: TButton
-        Left = 532
-        Top = 30
-        Width = 75
-        Height = 25
-        Caption = 'btnRepoList'
-        TabOrder = 2
-        OnClick = btnRepoListClick
-      end
-      object cbxTopics: TComboBox
-        Left = 271
-        Top = 32
-        Width = 255
-        Height = 21
+      object pcFunctions: TPageControl
+        Left = 0
+        Top = 73
+        Width = 1149
+        Height = 159
+        ActivePage = tbsPushNewTag
+        Align = alClient
+        TabHeight = 30
         TabOrder = 1
-        Text = 'cbxTopics'
-        Items.Strings = (
-          'tools'
-          'addon'
-          'clienti'
-          'verticali'
-          'test')
-      end
-      object cbxFunctions: TComboBox
-        Left = 10
-        Top = 93
-        Width = 255
-        Height = 21
-        TabOrder = 4
-        Text = 'cbxFunctions'
-        OnChange = cbxFunctionsChange
-        Items.Strings = (
-          'PushNewTag')
-      end
-      object btnExecuteFunction: TButton
-        Left = 280
-        Top = 91
-        Width = 121
-        Height = 25
-        Caption = 'btnExecuteFunction'
-        TabOrder = 5
-        OnClick = btnExecuteFunctionClick
-      end
-      object rgNewMainTag: TRadioGroup
-        Left = 628
-        Top = 9
-        Width = 369
-        Height = 105
-        Caption = 'rgNewMainTag'
-        Items.Strings = (
-          'Increase Minor Number'
-          'Increase Fix Number')
-        TabOrder = 3
-        OnClick = rgNewMainTagClick
+        ExplicitTop = 87
+        ExplicitHeight = 113
+        object tbsPushNewTag: TTabSheet
+          Caption = 'tbsPushNewTag'
+          object rgNewMainTag: TRadioGroup
+            Left = 6
+            Top = 3
+            Width = 369
+            Height = 105
+            Caption = 'rgNewMainTag'
+            Items.Strings = (
+              'Increase Minor Number'
+              'Increase Fix Number')
+            TabOrder = 0
+            OnClick = rgNewMainTagClick
+          end
+          object btnExecuteFunction: TButton
+            Left = 393
+            Top = 83
+            Width = 121
+            Height = 25
+            Caption = 'btnExecuteFunction'
+            TabOrder = 1
+            OnClick = btnExecuteFunctionClick
+          end
+        end
       end
     end
     object pnlMain: TPanel
       Left = 1
-      Top = 121
+      Top = 233
       Width = 1149
-      Height = 531
+      Height = 419
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitTop = 121
+      ExplicitHeight = 531
       object tvMain: TAdvTreeView
         Left = 0
         Top = 0
         Width = 1149
-        Height = 488
+        Height = 376
         Align = alClient
         ParentDoubleBuffered = False
         DoubleBuffered = True
@@ -237,25 +245,28 @@ object FrmMain: TFrmMain
         GlobalFont.Name = 'Segoe UI'
         OnAfterUnCheckNode = tvMainAfterUnCheckNode
         OnAfterCheckNode = tvMainAfterCheckNode
+        ExplicitHeight = 488
       end
       object pbLoadData: TProgressBar
         Left = 0
-        Top = 488
+        Top = 376
         Width = 1149
         Height = 24
         Align = alBottom
         TabOrder = 1
         Visible = False
+        ExplicitTop = 488
       end
       object sbRepos: TStatusBar
         Left = 0
-        Top = 512
+        Top = 400
         Width = 1149
         Height = 19
         Panels = <
           item
             Width = 50
           end>
+        ExplicitTop = 512
       end
     end
   end
