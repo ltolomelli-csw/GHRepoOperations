@@ -34,6 +34,13 @@ type
     procedure LoadRepos(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure CalculateNewMainTags(const ANewTagOperation: TNewTagOperation);
 
+    /// <summary>
+    ///   Funziona che ritorna i nodi selezionati dell'albero.
+    ///  AFilterSelected consente di applicare una funzione anonima di filtro, impostata dal chiamante
+    ///  che accetta in input TTVNodeData (associato al nodo) e ritorna True se il nodo rispetta il filtro,
+    ///  False se il nodo non rispetta il filtro
+    /// </summary>
+    function GetSelectedNodes(const AFilterSelected: TFunc<TTVNodeData, Boolean>; out ANodes: TArray<TAdvTreeViewNode>): Boolean;
 
     function AddTreeViewNode(AParent: TAdvTreeViewNode; ARepoModel: TGHCliRepoModel;
       const AShowCheckBox: Boolean): TAdvTreeViewNode; overload;
@@ -177,6 +184,49 @@ begin
       raise;
     end;
   end;
+end;
+
+function TTreeViewBuilder.GetSelectedNodes(const AFilterSelected: TFunc<TTVNodeData, Boolean>;
+  out ANodes: TArray<TAdvTreeViewNode>): Boolean;
+var
+  LNode: TAdvTreeViewNode;
+  LNodeData: TTVNodeData;
+  LGoNext, LFilterOK: Boolean;
+begin
+  SetLength(ANodes, 0);
+  if FTreeView.Nodes.Count = 0 then
+    Exit( False );
+
+  LNode := FTreeView.GetFirstRootNode;
+  repeat
+    LGoNext := True;
+    LFilterOK := True;
+    // se il nodo è da escludere rimane comunque checkato
+    if LNode.Checked[0] then
+    begin
+      if GetTVNodeData(LNode, LNodeData) then
+      begin
+        if Assigned(AFilterSelected) then
+          LFilterOK := AFilterSelected(LNodeData);
+
+        if LFilterOK then
+        begin
+          // se il nodo considerato è checkato passo al successivo nodo considerando l'ordine numerico
+          // (quello che effettivamente vedo come nodo successivo, indipendentemente dalla profondità)
+          SetLength(ANodes, Length(ANodes) + 1);
+          ANodes[High(ANodes)] := LNode;
+
+          // siccome mi sposto già al prossimo, faccio in modo che il comando sotto non lo faccia
+          LGoNext := False;
+          LNode := LNode.GetNext
+        end;
+      end;
+    end;
+
+    if LGoNext then
+      LNode := LNode.GetNext;
+  until (LNode = nil); // sono arrivato a fine albero
+  Result := Length(ANodes) > 0;
 end;
 
 class function TTreeViewBuilder.GetTVNodeData(ANode: TAdvTreeViewNode; out ANodeData: TTVNodeData): Boolean;
