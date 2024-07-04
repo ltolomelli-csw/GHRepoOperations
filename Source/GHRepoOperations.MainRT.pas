@@ -23,8 +23,10 @@ type
     FOrganization: string;
     FTopic: string;
     FRepoModels: TArray<TGHCliRepoModel>;
+    FTVNodeData: TTVNodeData;
     function ExtractReposInfo(const AOrganization, ATopic: string): TArray<TGHCliRepoModel>; overload;
     function ExtractReposInfo: TArray<TGHCliRepoModel>; overload;
+    procedure PushNewTag;
   public
     destructor Destroy; override;
 
@@ -35,6 +37,7 @@ type
     property Organization: string read FOrganization write FOrganization;
     property Topic: string read FTopic write FTopic;
     property RepoModels: TArray<TGHCliRepoModel> read FRepoModels;
+    property TVNodeData: TTVNodeData read FTVNodeData write FTVNodeData;
   end;
 
 implementation
@@ -53,10 +56,17 @@ end;
 procedure TGHRepoOperationsRT.Execute;
 begin
   inherited;
-  FreeOnTerminate := True;
   case ThreadOperation of
     toRepoExtraction:
-      FRepoModels := ExtractReposInfo;
+      begin
+        FreeOnTerminate := True;
+        FRepoModels := ExtractReposInfo;
+      end;
+    toTagPush:
+      begin
+        FreeOnTerminate := False;
+        PushNewTag;
+      end
     else
       Exit;
   end;
@@ -108,6 +118,23 @@ end;
 function TGHRepoOperationsRT.ExtractReposInfo: TArray<TGHCliRepoModel>;
 begin
   Result := ExtractReposInfo(Organization, Topic);
+end;
+
+procedure TGHRepoOperationsRT.PushNewTag;
+var
+  LTempPath, LRepoPath: string;
+begin
+  try
+  //  LTempPath := IncludeTrailingPathDelimiter(TPath.GetTempPath);
+    LTempPath := 'c:\scambio\_test\GitHub\CLI\';
+    if TGHCliRepoCommand.RepoClone(TVNodeData.RepoModel, LRepoPath, LTempPath) then
+      if TGHCliRepoCommand.RepoBranchCheckout(TVNodeData.Branch, LRepoPath) then
+        if TGHCliRepoCommand.RepoCreateNewTag(TVNodeData.ReleaseModel.NewTag, LRepoPath) then
+          TGHCliRepoCommand.RepoPushTag(LRepoPath);
+  finally
+    if DirectoryExists(LRepoPath) then
+      TDirectory.Delete(LRepoPath, True);
+  end;
 end;
 
 end.

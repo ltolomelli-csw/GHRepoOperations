@@ -22,8 +22,6 @@ object FrmMain: TFrmMain
     Height = 653
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 1014
-    ExplicitHeight = 538
     object pnlTop: TPanel
       Left = 1
       Top = 1
@@ -32,9 +30,6 @@ object FrmMain: TFrmMain
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitLeft = 2
-      ExplicitTop = -5
-      ExplicitWidth = 1012
       object lblOrganizations: TLabel
         Left = 10
         Top = 13
@@ -99,7 +94,7 @@ object FrmMain: TFrmMain
         Text = 'cbxFunctions'
         OnChange = cbxFunctionsChange
         Items.Strings = (
-          'PushTags')
+          'PushNewTag')
       end
       object btnExecuteFunction: TButton
         Left = 280
@@ -108,6 +103,7 @@ object FrmMain: TFrmMain
         Height = 25
         Caption = 'btnExecuteFunction'
         TabOrder = 5
+        OnClick = btnExecuteFunctionClick
       end
       object rgNewMainTag: TRadioGroup
         Left = 628
@@ -130,8 +126,6 @@ object FrmMain: TFrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitWidth = 1012
-      ExplicitHeight = 416
       object tvMain: TAdvTreeView
         Left = 0
         Top = 0
@@ -243,8 +237,6 @@ object FrmMain: TFrmMain
         GlobalFont.Name = 'Segoe UI'
         OnAfterUnCheckNode = tvMainAfterUnCheckNode
         OnAfterCheckNode = tvMainAfterCheckNode
-        ExplicitWidth = 1012
-        ExplicitHeight = 373
       end
       object pbLoadData: TProgressBar
         Left = 0
@@ -254,8 +246,6 @@ object FrmMain: TFrmMain
         Align = alBottom
         TabOrder = 1
         Visible = False
-        ExplicitTop = 373
-        ExplicitWidth = 1012
       end
       object sbRepos: TStatusBar
         Left = 0
@@ -266,8 +256,6 @@ object FrmMain: TFrmMain
           item
             Width = 50
           end>
-        ExplicitTop = 397
-        ExplicitWidth = 1012
       end
     end
   end

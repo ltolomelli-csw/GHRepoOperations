@@ -26,6 +26,11 @@ type
     class function RepoListAndLoad(const AOrganization, ATopic: string; out ARepoModels: TArray<TGHCliRepoModel>): Boolean;
     class function BranchesListAndLoad(const ARepoFullName: string; out ABranches: TArray<string>): Boolean; overload;
     class function ReleaseListAndLoad(const ARepoFullName: string; out ATags: TArray<TGHCliReleaseModel>): Boolean;
+
+    class function RepoClone(const ARepoModel: TGHCliRepoModel; out ARepoPath: string; const ATempPath: string = ''): Boolean;
+    class function RepoBranchCheckout(const ABranch: string; const ATempPath: string = ''): Boolean;
+    class function RepoCreateNewTag(const ATagName: string; const ATempPath: string = ''; const AForceTag: Boolean = True): Boolean;
+    class function RepoPushTag(const ATempPath: string = ''): Boolean;
   end;
 
 implementation
@@ -226,6 +231,50 @@ begin
 
     Result[I] := LModel;
   end;
+end;
+
+class function TGHCliRepoCommand.RepoBranchCheckout(const ABranch: string; const ATempPath: string): Boolean;
+var
+  LCMD, LRes: string;
+begin
+  LCMD := 'git checkout ' + ABranch;
+  LRes := GetCmdOutput(LCMD, ATempPath);
+  {TODO -o04/07/2024 -c : Bisognerebbe parsare il risultato e identificare qualcosa per capire che tutto è andato bene}
+  Result := True;
+end;
+
+class function TGHCliRepoCommand.RepoClone(const ARepoModel: TGHCliRepoModel; out ARepoPath: string; const ATempPath: string): Boolean;
+var
+  LCMD, LRes: string;
+begin
+  ARepoPath := IncludeTrailingPathDelimiter(ATempPath) + ARepoModel.Name;
+  LCMD := 'gh repo clone ' + ARepoModel.FullName + ' ' + ARepoPath;
+  LRes := GetCmdOutput(LCMD, ATempPath);
+  Result := DirectoryExists( ARepoPath );
+end;
+
+class function TGHCliRepoCommand.RepoCreateNewTag(const ATagName,
+  ATempPath: string; const AForceTag: Boolean): Boolean;
+var
+  LCMD, LRes: string;
+begin
+  LCMD := 'git tag ' + ATagName + ' -m ' + ATagName;
+  if AForceTag then
+    LCMD := LCMD + ' -f';
+
+  LRes := GetCmdOutput(LCMD, ATempPath);
+  {TODO -o04/07/2024 -c : Bisognerebbe parsare il risultato e identificare qualcosa per capire che tutto è andato bene}
+  Result := True;
+end;
+
+class function TGHCliRepoCommand.RepoPushTag(const ATempPath: string): Boolean;
+var
+  LCMD, LRes: string;
+begin
+  LCMD := 'git push --tag';
+  LRes := GetCmdOutput(LCMD, ATempPath);
+  {TODO -o04/07/2024 -c : Bisognerebbe parsare il risultato e identificare qualcosa per capire che tutto è andato bene}
+  Result := True;
 end;
 
 end.

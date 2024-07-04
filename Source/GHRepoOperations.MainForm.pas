@@ -44,11 +44,13 @@ type
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
     procedure rgNewMainTagClick(Sender: TObject);
     procedure cbxFunctionsChange(Sender: TObject);
+    procedure btnExecuteFunctionClick(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
+    procedure OnTerminateTagPush(Sender: TObject);
     procedure EnableBtnRepoList;
     procedure EnableBtnExecuteFunction;
     procedure EnableRadioButton;
@@ -65,6 +67,39 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TFrmMain.btnExecuteFunctionClick(Sender: TObject);
+var
+  LSelectedNodes: TArray<TAdvTreeViewNode>;
+  I: Integer;
+  LNode: TAdvTreeViewNode;
+  LNodeData: TTVNodeData;
+  LFilter: TFunc<TTVNodeData, Boolean>;
+begin
+  LFilter :=
+    function (ATVNodeData: TTVNodeData): Boolean
+    begin
+      Result := not(ATVNodeData.IsRoot);
+    end;
+
+  if not(FTreeViewBuilder.GetSelectedNodes(LFilter, LSelectedNodes)) then
+    Exit;
+
+  FMainRT := TGHRepoOperationsRT.Create(True);
+  FMainRT.ThreadOperation := TThreadOperation.toTagPush; {TODO -o04/07/2024 -c : recuperare in base al valore selezionato}
+  FMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
+  FMainRT.OnTerminate := OnTerminateTagPush;
+
+  for I := 0 to High(LSelectedNodes) do
+  begin
+    LNode := LSelectedNodes[I];
+    if FTreeViewBuilder.GetTVNodeData(LNode, LNodeData) then
+    begin
+      FMainRT.TVNodeData := LNodeData;
+      FMainRT.Start;
+    end;
+  end;
+end;
 
 procedure TFrmMain.btnRepoListClick(Sender: TObject);
 var
@@ -126,6 +161,15 @@ begin
   finally
     TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
     EnableRadioButton;
+  end;
+end;
+
+procedure TFrmMain.OnTerminateTagPush(Sender: TObject);
+begin
+  try
+    FreeAndNil(FMainRT);
+  finally
+    TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
   end;
 end;
 
