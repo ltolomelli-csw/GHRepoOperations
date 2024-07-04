@@ -26,7 +26,6 @@ type
     FShowProgNum: Boolean;
     function IsPBAssigned: Boolean;
     function IsStatusPanelAssigned: Boolean;
-    procedure SetInitialMsg(const Value: string);
   public
     constructor Create(AProgBar: TProgressBar; AStatusPanel: TStatusPanel);
     destructor Destroy; override;
@@ -38,29 +37,10 @@ type
     function GetMax: Integer;
     procedure Hide(const AClear: Boolean);
 
-    property InitialMsg: string read FInitialMsg write SetInitialMsg;
     property ShowProgNum: Boolean read FShowProgNum write FShowProgNum;
   end;
 
-procedure InitializeGHRepoProgBar(AJSIProgBar: IGHRepoOpProgressBar; const AMsg: string; const AMax: Integer);
-
 implementation
-
-procedure InitializeGHRepoProgBar(AJSIProgBar: IGHRepoOpProgressBar; const AMsg: string; const AMax: Integer);
-begin
-  TThread.Synchronize(nil,
-    procedure
-    begin
-      if Assigned(AJSIProgBar) then
-      begin
-        AJSIProgBar.Clear;
-        AJSIProgBar.Max(AMax);
-        (AJSIProgBar as TGHRepoOpProgressBar).InitialMsg := AMsg;
-        AJSIProgBar.SetMessage(AMsg, False);
-      end;
-    end
-  );
-end;
 
 { TGHRepoOpProgressBar }
 
@@ -148,17 +128,6 @@ begin
   );
 end;
 
-procedure TGHRepoOpProgressBar.SetInitialMsg(const Value: string);
-begin
-  TThread.Synchronize(nil,
-    procedure
-    begin
-      FInitialMsg := Value;
-      FProgBar.Visible := True;
-    end
-  );
-end;
-
 procedure TGHRepoOpProgressBar.SetMessage(const AMsg: string; const AShowProgNum: Boolean);
 var
   LMsg: string;
@@ -166,6 +135,9 @@ begin
   TThread.Synchronize(nil,
     procedure
     begin
+      if IsPBAssigned then
+        FProgBar.Show;
+
       if IsStatusPanelAssigned then
       begin
         if AMsg.IsEmpty then

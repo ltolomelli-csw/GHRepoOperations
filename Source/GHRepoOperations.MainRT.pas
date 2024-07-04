@@ -81,11 +81,8 @@ begin
     try
       if TGHCliRepoCommand.RepoListAndLoad(AOrganization, ATopic, Result) then
       begin
-        InitializeGHRepoProgBar(
-          GHRepoOpProgressBar,
-          Format(RS_Msg_PBar_ExtractRepos, [AOrganization.QuotedString, ATopic.QuotedString]),
-          Length(Result)
-        );
+        GHRepoOpProgressBar.Max(Length(Result));
+        GHRepoOpProgressBar.SetMessage(Format(RS_Msg_PBar_ExtractRepos, [AOrganization.QuotedString, ATopic.QuotedString]));
 
         for I := 0 to High(Result) do
         begin
@@ -127,6 +124,7 @@ begin
   try
   //  LTempPath := IncludeTrailingPathDelimiter(TPath.GetTempPath);
     LTempPath := 'c:\scambio\_test\GitHub\CLI\';
+
     if TGHCliRepoCommand.RepoClone(TVNodeData.RepoModel, LRepoPath, LTempPath) then
       if TGHCliRepoCommand.RepoBranchCheckout(TVNodeData.Branch, LRepoPath) then
         if TGHCliRepoCommand.RepoCreateNewTag(TVNodeData.ReleaseModel.NewTag, LRepoPath) then
