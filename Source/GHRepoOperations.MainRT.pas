@@ -64,7 +64,7 @@ begin
       end;
     toTagPush:
       begin
-        FreeOnTerminate := False;
+        FreeOnTerminate := True;
         PushNewTag;
       end
     else

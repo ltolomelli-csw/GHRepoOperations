@@ -50,7 +50,6 @@ type
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
-    procedure OnTerminateTagPush(Sender: TObject);
     procedure EnableBtnRepoList;
     procedure EnableBtnExecuteFunction;
     procedure EnableRadioButton;
@@ -75,6 +74,7 @@ var
   LNode: TAdvTreeViewNode;
   LNodeData: TTVNodeData;
   LFilter: TFunc<TTVNodeData, Boolean>;
+  LMainRT: TGHRepoOperationsRT;
 begin
   LFilter :=
     function (ATVNodeData: TTVNodeData): Boolean
@@ -85,19 +85,22 @@ begin
   if not(FTreeViewBuilder.GetSelectedNodes(LFilter, LSelectedNodes)) then
     Exit;
 
-  FMainRT := TGHRepoOperationsRT.Create(True);
-  FMainRT.ThreadOperation := TThreadOperation.toTagPush; {TODO -o04/07/2024 -c : recuperare in base al valore selezionato}
-  FMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
-  FMainRT.OnTerminate := OnTerminateTagPush;
-
-  for I := 0 to High(LSelectedNodes) do
-  begin
-    LNode := LSelectedNodes[I];
-    if FTreeViewBuilder.GetTVNodeData(LNode, LNodeData) then
+  {TODO -o04/07/2024 -c : Sicuramente migliorabile, da capire come}
+  try
+    for I := 0 to High(LSelectedNodes) do
     begin
-      FMainRT.TVNodeData := LNodeData;
-      FMainRT.Start;
+      LNode := LSelectedNodes[I];
+      if FTreeViewBuilder.GetTVNodeData(LNode, LNodeData) then
+      begin
+        LMainRT := TGHRepoOperationsRT.Create(True);
+        LMainRT.TVNodeData := LNodeData;
+        LMainRT.ThreadOperation := TThreadOperation.toTagPush; {TODO -o04/07/2024 -c : recuperare in base al valore selezionato}
+        LMainRT.GHRepoOpProgressBar := TGHRepoOpProgressBar.Create(pbLoadData, sbRepos.Panels[0]);
+        LMainRT.Start;
+      end;
     end;
+  finally
+    TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
   end;
 end;
 
@@ -161,15 +164,6 @@ begin
   finally
     TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
     EnableRadioButton;
-  end;
-end;
-
-procedure TFrmMain.OnTerminateTagPush(Sender: TObject);
-begin
-  try
-    FreeAndNil(FMainRT);
-  finally
-    TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
   end;
 end;
 
