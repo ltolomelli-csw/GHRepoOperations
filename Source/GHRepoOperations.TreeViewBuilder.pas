@@ -10,6 +10,7 @@ uses
   AdvTreeView,
   AdvTreeViewBase,
   AdvTreeViewData,
+  GHRepoOperations.Constants,
   GHRepoOperations.Messages,
   GHRepoOperations.Models,
   GHRepoOperations.Types,
@@ -77,19 +78,19 @@ begin
   Result.DataObject := LNodeData;
 
   if LNodeData.ShowCheckBox then
-    Result.CheckTypes[0] := tvntCheckBox
+    Result.CheckTypes[C_TREECOL_REPO_BRANCH] := tvntCheckBox
   else
-    Result.CheckTypes[0] := tvntNone;
+    Result.CheckTypes[C_TREECOL_REPO_BRANCH] := tvntNone;
 
-  Result.Text[0] := IfThen(ABranch.Trim.IsEmpty, ARepoModel.Name, ABranch);
-  Result.Text[1] := ATag;
+  Result.Text[C_TREECOL_REPO_BRANCH] := IfThen(ABranch.Trim.IsEmpty, ARepoModel.Name, ABranch);
+  Result.Text[C_TREECOL_NEW_TAG] := ANewTag;
+  Result.Text[C_TREECOL_TAG] := ATag;
 
-  Result.Text[2] := EmptyStr;
+  Result.Text[C_TREECOL_RELEASE_TYPE] := EmptyStr;
   if AReleaseType.Key <> grtNull then
-    Result.Text[2] := AReleaseType.Value;
+    Result.Text[C_TREECOL_RELEASE_TYPE] := AReleaseType.Value;
 
-  Result.Text[3] := APublishedDate;
-  Result.Text[4] := ANewTag;
+  Result.Text[C_TREECOL_RELEASE_DATE] := APublishedDate;
 end;
 
 procedure TTreeViewBuilder.CalculateNewMainTag(const ANewTagOperation: TNewTagOperation; ANode: TAdvTreeViewNode);
@@ -101,7 +102,7 @@ begin
   LNewTag := IncreaseReleaseNumber(LNodeData.ReleaseModel.Tag, ANewTagOperation);
   LNodeData.ReleaseModel.NewTag := LNewTag;
   ANode.DataObject := LNodeData;
-  ANode.Text[4] := LNewTag;
+  ANode.Text[C_TREECOL_NEW_TAG] := LNewTag;
 end;
 
 procedure TTreeViewBuilder.CalculateNewMainTags(const ANewTagOperation: TNewTagOperation);
@@ -312,15 +313,15 @@ end;
 procedure TTreeViewBuilder.ResetColumns;
 begin
   FTreeView.Columns.Add;
-  FTreeView.Columns[0].Text := RS_Msg_TreeColTitle_RepoBranch;
+  FTreeView.Columns[C_TREECOL_REPO_BRANCH].Text := RS_Msg_TreeColTitle_RepoBranch;
   FTreeView.Columns.Add;
-  FTreeView.Columns[1].Text := RS_Msg_TreeColTitle_Tag;
+  FTreeView.Columns[C_TREECOL_NEW_TAG].Text := RS_Msg_TreeColTitle_NewTag;
   FTreeView.Columns.Add;
-  FTreeView.Columns[2].Text := RS_Msg_TreeColTitle_ReleaseType;
+  FTreeView.Columns[C_TREECOL_TAG].Text := RS_Msg_TreeColTitle_Tag;
   FTreeView.Columns.Add;
-  FTreeView.Columns[3].Text := RS_Msg_TreeColTitle_PublishedDate;
+  FTreeView.Columns[C_TREECOL_RELEASE_TYPE].Text := RS_Msg_TreeColTitle_ReleaseType;
   FTreeView.Columns.Add;
-  FTreeView.Columns[4].Text := RS_Msg_TreeColTitle_NewTag;
+  FTreeView.Columns[C_TREECOL_RELEASE_DATE].Text := RS_Msg_TreeColTitle_PublishedDate;
 
   FTreeView.ColumnsAppearance.Stretch := True;
   FTreeView.ColumnsAppearance.StretchAll := True;
