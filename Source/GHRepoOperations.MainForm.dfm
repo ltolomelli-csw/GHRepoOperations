@@ -27,7 +27,7 @@ object FrmMain: TFrmMain
       Left = 1
       Top = 1
       Width = 1149
-      Height = 232
+      Height = 240
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 0
@@ -89,13 +89,15 @@ object FrmMain: TFrmMain
       end
       object pcFunctions: TPageControl
         Left = 0
-        Top = 73
+        Top = 113
         Width = 1149
-        Height = 159
+        Height = 127
         ActivePage = tbsPushNewTag
         Align = alClient
         TabHeight = 30
         TabOrder = 1
+        ExplicitTop = 129
+        ExplicitHeight = 111
         object tbsPushNewTag: TTabSheet
           Caption = 'tbsPushNewTag'
           object rgNewMainTag: TRadioGroup
@@ -103,7 +105,7 @@ object FrmMain: TFrmMain
             Left = 233
             Top = 3
             Width = 207
-            Height = 113
+            Height = 81
             Margins.Left = 6
             Align = alLeft
             Caption = 'rgNewMainTag'
@@ -120,7 +122,7 @@ object FrmMain: TFrmMain
             Left = 6
             Top = 3
             Width = 218
-            Height = 113
+            Height = 81
             Margins.Left = 6
             Align = alLeft
             Caption = 'rgOptionNewMainTag'
@@ -130,17 +132,19 @@ object FrmMain: TFrmMain
             TabOrder = 0
             OnClick = rgOptionNewMainTagClick
             ExplicitLeft = 10
+            ExplicitHeight = 113
           end
           object pnlNewTagButtons: TPanel
             AlignWithMargins = True
             Left = 449
             Top = 3
             Width = 240
-            Height = 113
+            Height = 81
             Margins.Left = 6
             Align = alLeft
             BevelOuter = bvNone
             TabOrder = 2
+            ExplicitHeight = 113
             object btnNewTagExecute: TButton
               AlignWithMargins = True
               Left = 3
@@ -151,9 +155,7 @@ object FrmMain: TFrmMain
               Caption = 'btnNewTagExecute'
               TabOrder = 1
               OnClick = btnNewTagExecuteClick
-              ExplicitLeft = 8
-              ExplicitTop = 40
-              ExplicitWidth = 121
+              ExplicitTop = 35
             end
             object btnNewTagClean: TButton
               AlignWithMargins = True
@@ -165,26 +167,62 @@ object FrmMain: TFrmMain
               Caption = 'btnNewTagClean'
               TabOrder = 0
               OnClick = btnNewTagCleanClick
-              ExplicitLeft = -3
-              ExplicitTop = -3
+              ExplicitTop = 4
             end
           end
+        end
+      end
+      object pnlTreeButtons: TPanel
+        Left = 0
+        Top = 73
+        Width = 1149
+        Height = 40
+        Align = alTop
+        TabOrder = 2
+        object btnSelectAll: TButton
+          Left = 10
+          Top = 6
+          Width = 75
+          Height = 25
+          Caption = 'btnSelectAll'
+          TabOrder = 0
+          OnClick = btnSelectAllClick
+        end
+        object btnDeselectAll: TButton
+          Left = 91
+          Top = 6
+          Width = 86
+          Height = 25
+          Caption = 'btnDeselectAll'
+          TabOrder = 1
+          OnClick = btnDeselectAllClick
+        end
+        object btnReverseSelection: TButton
+          Left = 183
+          Top = 6
+          Width = 114
+          Height = 25
+          Caption = 'btnReverseSelection'
+          TabOrder = 2
+          OnClick = btnReverseSelectionClick
         end
       end
     end
     object pnlMain: TPanel
       Left = 1
-      Top = 233
+      Top = 241
       Width = 1149
-      Height = 419
+      Height = 411
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
+      ExplicitTop = 233
+      ExplicitHeight = 419
       object tvMain: TAdvTreeView
         Left = 0
         Top = 0
         Width = 1149
-        Height = 376
+        Height = 368
         Align = alClient
         ParentDoubleBuffered = False
         DoubleBuffered = True
@@ -291,25 +329,29 @@ object FrmMain: TFrmMain
         GlobalFont.Name = 'Segoe UI'
         OnAfterUnCheckNode = tvMainAfterUnCheckNode
         OnAfterCheckNode = tvMainAfterCheckNode
+        ExplicitTop = -1
+        ExplicitHeight = 337
       end
       object pbLoadData: TProgressBar
         Left = 0
-        Top = 376
+        Top = 368
         Width = 1149
         Height = 24
         Align = alBottom
         TabOrder = 1
         Visible = False
+        ExplicitTop = 376
       end
       object sbRepos: TStatusBar
         Left = 0
-        Top = 400
+        Top = 392
         Width = 1149
         Height = 19
         Panels = <
           item
             Width = 50
           end>
+        ExplicitTop = 400
       end
     end
   end

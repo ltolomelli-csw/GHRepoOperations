@@ -40,6 +40,10 @@ type
     pnlNewTagButtons: TPanel;
     btnNewTagExecute: TButton;
     btnNewTagClean: TButton;
+    pnlTreeButtons: TPanel;
+    btnSelectAll: TButton;
+    btnDeselectAll: TButton;
+    btnReverseSelection: TButton;
     procedure btnRepoListClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure tvMainAfterUnCheckNode(Sender: TObject;
@@ -50,12 +54,16 @@ type
     procedure btnNewTagExecuteClick(Sender: TObject);
     procedure rgOptionNewMainTagClick(Sender: TObject);
     procedure btnNewTagCleanClick(Sender: TObject);
+    procedure btnSelectAllClick(Sender: TObject);
+    procedure btnDeselectAllClick(Sender: TObject);
+    procedure btnReverseSelectionClick(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
     procedure EnableBtnRepoList;
+    procedure EnableBtnTreeButtons;
     procedure EnableRgOptionNewMainTag;
     procedure EnableRgNewMainTag;
     function GetNewTagOperationFromSelection: TNewTagOperation;
@@ -74,6 +82,15 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TFrmMain.btnDeselectAllClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  inherited;
+  for I := 0 to tvMain.Nodes.Count -1 do
+    tvMain.UnCheckNode(tvMain.Nodes[I], 0, True)
+end;
 
 procedure TFrmMain.btnNewTagCleanClick(Sender: TObject);
 begin
@@ -138,6 +155,27 @@ begin
   FMainRT.Start;
 end;
 
+procedure TFrmMain.btnReverseSelectionClick(Sender: TObject);
+var
+  LNode: TAdvTreeViewNode;
+begin
+  // ciclo su tutti i nodi
+  LNode := tvMain.GetFirstRootNode;
+  repeat
+    LNode.Checked[0] := not(LNode.Checked[0]);
+    LNode := LNode.GetNext;
+  until (LNode = nil); // sono arrivato a fine albero
+end;
+
+procedure TFrmMain.btnSelectAllClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  inherited;
+  for I := 0 to tvMain.Nodes.Count -1 do
+    tvMain.CheckNode(tvMain.Nodes[I], 0, True)
+end;
+
 constructor TFrmMain.Create(AOwner: TComponent);
 begin
   inherited;
@@ -153,6 +191,11 @@ end;
 procedure TFrmMain.EnableBtnRepoList;
 begin
   btnRepoList.Enabled := True;
+end;
+
+procedure TFrmMain.EnableBtnTreeButtons;
+begin
+  TGHVCLUtils.EnableControlsAndChilds(pnlTreeButtons, tvMain.Nodes.Count > 0, True);
 end;
 
 procedure TFrmMain.EnableRgNewMainTag;
@@ -171,6 +214,7 @@ begin
     FillTreeView( FMainRT.RepoModels );
   finally
     TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
+    EnableBtnTreeButtons;
     EnableRgNewMainTag;
   end;
 end;
@@ -208,6 +252,7 @@ begin
 
   InitCompPushNewTag;
 
+  EnableBtnTreeButtons;
   EnableBtnRepoList;
   EnableRgOptionNewMainTag;
   EnableRgNewMainTag;
