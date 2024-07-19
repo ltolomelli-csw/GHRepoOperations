@@ -36,7 +36,10 @@ type
     tbsPushNewTag: TTabSheet;
     rgNewMainTag: TRadioGroup;
     btnRepoList: TButton;
-    btnExecuteFunction: TButton;
+    rgOptionNewMainTag: TRadioGroup;
+    pnlNewTagButtons: TPanel;
+    btnNewTagExecute: TButton;
+    btnNewTagClean: TButton;
     procedure btnRepoListClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure tvMainAfterUnCheckNode(Sender: TObject;
@@ -44,15 +47,19 @@ type
     procedure tvMainAfterCheckNode(Sender: TObject;
       ANode: TAdvTreeViewVirtualNode; AColumn: Integer);
     procedure rgNewMainTagClick(Sender: TObject);
-    procedure btnExecuteFunctionClick(Sender: TObject);
+    procedure btnNewTagExecuteClick(Sender: TObject);
+    procedure rgOptionNewMainTagClick(Sender: TObject);
+    procedure btnNewTagCleanClick(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
     procedure EnableBtnRepoList;
-    procedure EnableRadioButton;
+    procedure EnableRgOptionNewMainTag;
+    procedure EnableRgNewMainTag;
     function GetNewTagOperationFromSelection: TNewTagOperation;
+    function NewTagOptionOnlySelected: Boolean;
     procedure InitComponents;
 
     procedure InitCompPushNewTag;
@@ -68,7 +75,12 @@ implementation
 
 {$R *.dfm}
 
-procedure TFrmMain.btnExecuteFunctionClick(Sender: TObject);
+procedure TFrmMain.btnNewTagCleanClick(Sender: TObject);
+begin
+  FTreeViewBuilder.CalculateNewMainTags( ntoClean, NewTagOptionOnlySelected );
+end;
+
+procedure TFrmMain.btnNewTagExecuteClick(Sender: TObject);
 var
   LSelectedNodes: TArray<TAdvTreeViewNode>;
   I: Integer;
@@ -143,9 +155,14 @@ begin
   btnRepoList.Enabled := True;
 end;
 
-procedure TFrmMain.EnableRadioButton;
+procedure TFrmMain.EnableRgNewMainTag;
 begin
-  rgNewMainTag.Enabled := tvMain.Nodes.Count > 0;
+  rgNewMainTag.Enabled := (rgOptionNewMainTag.ItemIndex > -1) and rgOptionNewMainTag.Enabled;
+end;
+
+procedure TFrmMain.EnableRgOptionNewMainTag;
+begin
+  rgOptionNewMainTag.Enabled := (tvMain.Nodes.Count > 0);
 end;
 
 procedure TFrmMain.OnTerminateFillTreeView(Sender: TObject);
@@ -154,13 +171,8 @@ begin
     FillTreeView( FMainRT.RepoModels );
   finally
     TGHVCLUtils.EnableControlsAndChilds(pnlTop, True, True);
-    EnableRadioButton;
+    EnableRgNewMainTag;
   end;
-end;
-
-procedure TFrmMain.rgNewMainTagClick(Sender: TObject);
-begin
-  FTreeViewBuilder.CalculateNewMainTags( GetNewTagOperationFromSelection );
 end;
 
 procedure TFrmMain.FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
@@ -197,14 +209,31 @@ begin
   InitCompPushNewTag;
 
   EnableBtnRepoList;
-  EnableRadioButton;
+  EnableRgOptionNewMainTag;
+  EnableRgNewMainTag;
 
   sbRepos.Panels[0].Width := sbRepos.Width;
 end;
 
 procedure TFrmMain.InitCompPushNewTag;
 begin
+  rgOptionNewMainTag.ItemIndex := -1;
   rgNewMainTag.ItemIndex := -1;
+end;
+
+function TFrmMain.NewTagOptionOnlySelected: Boolean;
+begin
+  Result := rgOptionNewMainTag.ItemIndex = 1;
+end;
+
+procedure TFrmMain.rgNewMainTagClick(Sender: TObject);
+begin
+  FTreeViewBuilder.CalculateNewMainTags( GetNewTagOperationFromSelection, NewTagOptionOnlySelected );
+end;
+
+procedure TFrmMain.rgOptionNewMainTagClick(Sender: TObject);
+begin
+  EnableRgNewMainTag;
 end;
 
 procedure TFrmMain.tvMainAfterCheckNode(Sender: TObject;

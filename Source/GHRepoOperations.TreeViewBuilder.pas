@@ -33,7 +33,7 @@ type
 
     procedure ResetTree;
     procedure LoadRepos(const ARepoModels: TArray<TGHCliRepoModel>);
-    procedure CalculateNewMainTags(const ANewTagOperation: TNewTagOperation);
+    procedure CalculateNewMainTags(const ANewTagOperation: TNewTagOperation; const AOnlySelected: Boolean);
 
     /// <summary>
     ///   Funziona che ritorna i nodi selezionati dell'albero.
@@ -99,26 +99,52 @@ var
   LNewTag: string;
 begin
   LNodeData := TTVNodeData(ANode.DataObject);
-  LNewTag := IncreaseReleaseNumber(LNodeData.ReleaseModel.Tag, ANewTagOperation);
+  if ANewTagOperation = ntoClean then
+    LNewTag := ''
+  else
+    LNewTag := IncreaseReleaseNumber(LNodeData.ReleaseModel.Tag, ANewTagOperation);
+
   LNodeData.ReleaseModel.NewTag := LNewTag;
   ANode.DataObject := LNodeData;
   ANode.Text[C_TREECOL_NEW_TAG] := LNewTag;
 end;
 
-procedure TTreeViewBuilder.CalculateNewMainTags(const ANewTagOperation: TNewTagOperation);
+procedure TTreeViewBuilder.CalculateNewMainTags(const ANewTagOperation: TNewTagOperation; const AOnlySelected: Boolean);
 var
   LNode: TAdvTreeViewNode;
+  LFilter: TFunc<TTVNodeData, Boolean>;
+  LSelectedNodes: TArray<TAdvTreeViewNode>;
+  I: Integer;
 begin
   if FTreeView.Nodes.Count = 0 then
     Exit;
 
   FTreeView.BeginUpdate;
   try
-    LNode := FTreeView.GetFirstRootNode;
-    repeat
-      CalculateNewMainTag(ANewTagOperation, LNode);
-      LNode := LNode.GetNext;
-    until (LNode = nil); // sono arrivato a fine albero
+    if AOnlySelected then
+    begin
+      // solo su quelli selezionati non
+      LFilter :=
+        function (ATVNodeData: TTVNodeData): Boolean
+        begin
+          Result := not(ATVNodeData.IsRoot);
+        end;
+
+      if not(GetSelectedNodes(LFilter, LSelectedNodes)) then
+        Exit;
+
+      for I := 0 to High(LSelectedNodes) do
+        CalculateNewMainTag(ANewTagOperation, LSelectedNodes[I]);
+    end
+    else
+    begin
+      // ciclo su tutti i nodi
+      LNode := FTreeView.GetFirstRootNode;
+      repeat
+        CalculateNewMainTag(ANewTagOperation, LNode);
+        LNode := LNode.GetNext;
+      until (LNode = nil); // sono arrivato a fine albero
+    end;
   finally
     FTreeView.EndUpdate;
   end;

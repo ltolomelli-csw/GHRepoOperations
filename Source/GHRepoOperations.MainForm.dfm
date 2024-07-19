@@ -96,30 +96,78 @@ object FrmMain: TFrmMain
         Align = alClient
         TabHeight = 30
         TabOrder = 1
-        ExplicitTop = 87
-        ExplicitHeight = 113
         object tbsPushNewTag: TTabSheet
           Caption = 'tbsPushNewTag'
           object rgNewMainTag: TRadioGroup
-            Left = 6
+            AlignWithMargins = True
+            Left = 233
             Top = 3
-            Width = 369
-            Height = 105
+            Width = 207
+            Height = 113
+            Margins.Left = 6
+            Align = alLeft
             Caption = 'rgNewMainTag'
             Items.Strings = (
               'Increase Minor Number'
               'Increase Fix Number')
-            TabOrder = 0
-            OnClick = rgNewMainTagClick
-          end
-          object btnExecuteFunction: TButton
-            Left = 393
-            Top = 83
-            Width = 121
-            Height = 25
-            Caption = 'btnExecuteFunction'
             TabOrder = 1
-            OnClick = btnExecuteFunctionClick
+            OnClick = rgNewMainTagClick
+            ExplicitLeft = 234
+            ExplicitHeight = 105
+          end
+          object rgOptionNewMainTag: TRadioGroup
+            AlignWithMargins = True
+            Left = 6
+            Top = 3
+            Width = 218
+            Height = 113
+            Margins.Left = 6
+            Align = alLeft
+            Caption = 'rgOptionNewMainTag'
+            Items.Strings = (
+              'NewMainTagAllRepo'
+              'NewMainTagSelectedNodes')
+            TabOrder = 0
+            OnClick = rgOptionNewMainTagClick
+            ExplicitLeft = 10
+          end
+          object pnlNewTagButtons: TPanel
+            AlignWithMargins = True
+            Left = 449
+            Top = 3
+            Width = 240
+            Height = 113
+            Margins.Left = 6
+            Align = alLeft
+            BevelOuter = bvNone
+            TabOrder = 2
+            object btnNewTagExecute: TButton
+              AlignWithMargins = True
+              Left = 3
+              Top = 34
+              Width = 234
+              Height = 25
+              Align = alTop
+              Caption = 'btnNewTagExecute'
+              TabOrder = 1
+              OnClick = btnNewTagExecuteClick
+              ExplicitLeft = 8
+              ExplicitTop = 40
+              ExplicitWidth = 121
+            end
+            object btnNewTagClean: TButton
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 234
+              Height = 25
+              Align = alTop
+              Caption = 'btnNewTagClean'
+              TabOrder = 0
+              OnClick = btnNewTagCleanClick
+              ExplicitLeft = -3
+              ExplicitTop = -3
+            end
           end
         end
       end
@@ -132,8 +180,6 @@ object FrmMain: TFrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitTop = 121
-      ExplicitHeight = 531
       object tvMain: TAdvTreeView
         Left = 0
         Top = 0
@@ -245,7 +291,6 @@ object FrmMain: TFrmMain
         GlobalFont.Name = 'Segoe UI'
         OnAfterUnCheckNode = tvMainAfterUnCheckNode
         OnAfterCheckNode = tvMainAfterCheckNode
-        ExplicitHeight = 488
       end
       object pbLoadData: TProgressBar
         Left = 0
@@ -255,7 +300,6 @@ object FrmMain: TFrmMain
         Align = alBottom
         TabOrder = 1
         Visible = False
-        ExplicitTop = 488
       end
       object sbRepos: TStatusBar
         Left = 0
@@ -266,7 +310,6 @@ object FrmMain: TFrmMain
           item
             Width = 50
           end>
-        ExplicitTop = 512
       end
     end
   end

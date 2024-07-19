@@ -8,7 +8,7 @@ uses
 type
   TThreadOperation = (toNull, toRepoExtraction, toTagPush);
   TGHReleaseType = (grtNull, grtNormal, grtLatest, grtPreRelease);
-  TNewTagOperation = (ntoNull, ntoIncreaseMinor, ntoIncreaseFix);
+  TNewTagOperation = (ntoNull, ntoClean, ntoIncreaseMinor, ntoIncreaseFix);
 
   TPairGHReleaseType = TPair<TGHReleaseType, string>;
 
