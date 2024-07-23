@@ -96,8 +96,6 @@ object FrmMain: TFrmMain
         Align = alClient
         TabHeight = 30
         TabOrder = 1
-        ExplicitTop = 129
-        ExplicitHeight = 111
         object tbsPushNewTag: TTabSheet
           Caption = 'tbsPushNewTag'
           object rgNewMainTag: TRadioGroup
@@ -114,8 +112,6 @@ object FrmMain: TFrmMain
               'Increase Fix Number')
             TabOrder = 1
             OnClick = rgNewMainTagClick
-            ExplicitLeft = 234
-            ExplicitHeight = 105
           end
           object rgOptionNewMainTag: TRadioGroup
             AlignWithMargins = True
@@ -131,8 +127,6 @@ object FrmMain: TFrmMain
               'NewMainTagSelectedNodes')
             TabOrder = 0
             OnClick = rgOptionNewMainTagClick
-            ExplicitLeft = 10
-            ExplicitHeight = 113
           end
           object pnlNewTagButtons: TPanel
             AlignWithMargins = True
@@ -144,7 +138,6 @@ object FrmMain: TFrmMain
             Align = alLeft
             BevelOuter = bvNone
             TabOrder = 2
-            ExplicitHeight = 113
             object btnNewTagExecute: TButton
               AlignWithMargins = True
               Left = 3
@@ -155,7 +148,6 @@ object FrmMain: TFrmMain
               Caption = 'btnNewTagExecute'
               TabOrder = 1
               OnClick = btnNewTagExecuteClick
-              ExplicitTop = 35
             end
             object btnNewTagClean: TButton
               AlignWithMargins = True
@@ -167,7 +159,6 @@ object FrmMain: TFrmMain
               Caption = 'btnNewTagClean'
               TabOrder = 0
               OnClick = btnNewTagCleanClick
-              ExplicitTop = 4
             end
           end
         end
@@ -216,8 +207,6 @@ object FrmMain: TFrmMain
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitTop = 233
-      ExplicitHeight = 419
       object tvMain: TAdvTreeView
         Left = 0
         Top = 0
@@ -232,6 +221,7 @@ object FrmMain: TFrmMain
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
+        PopupMenu = popupTree
         TabOrder = 0
         Stroke.Color = 11119017
         Groups = <>
@@ -329,8 +319,8 @@ object FrmMain: TFrmMain
         GlobalFont.Name = 'Segoe UI'
         OnAfterUnCheckNode = tvMainAfterUnCheckNode
         OnAfterCheckNode = tvMainAfterCheckNode
-        ExplicitTop = -1
-        ExplicitHeight = 337
+        OnNodeMouseLeave = tvMainNodeMouseLeave
+        OnNodeMouseEnter = tvMainNodeMouseEnter
       end
       object pbLoadData: TProgressBar
         Left = 0
@@ -340,7 +330,6 @@ object FrmMain: TFrmMain
         Align = alBottom
         TabOrder = 1
         Visible = False
-        ExplicitTop = 376
       end
       object sbRepos: TStatusBar
         Left = 0
@@ -351,8 +340,47 @@ object FrmMain: TFrmMain
           item
             Width = 50
           end>
-        ExplicitTop = 400
       end
+    end
+  end
+  object ActionList1: TActionList
+    Left = 736
+    Top = 24
+    object actOpenRepoMain: TAction
+      Caption = 'actOpenRepoLink'
+      OnExecute = actOpenRepoMainExecute
+    end
+    object actOpenRepoBranch: TAction
+      Caption = 'actOpenRepoBranch'
+      OnExecute = actOpenRepoBranchExecute
+    end
+    object actOpenRepoReleases: TAction
+      Caption = 'actOpenRepoReleases'
+      OnExecute = actOpenRepoReleasesExecute
+    end
+    object actOpenRepoTags: TAction
+      Caption = 'actOpenRepoTags'
+      OnExecute = actOpenRepoTagsExecute
+    end
+  end
+  object popupTree: TPopupMenu
+    Left = 800
+    Top = 24
+    object menuOpenRepoMain: TMenuItem
+      Action = actOpenRepoMain
+      Caption = 'menuOpenRepoMain (actOpenRepoLink)'
+    end
+    object menuOpenRepoBranch: TMenuItem
+      Action = actOpenRepoBranch
+      Caption = 'menuOpenRepoBranch (actOpenRepoBranch)'
+    end
+    object menuOpenRepoReleases: TMenuItem
+      Action = actOpenRepoReleases
+      Caption = 'menuOpenRepoReleases (actOpenRepoReleases)'
+    end
+    object menuOpenRepoTags: TMenuItem
+      Action = actOpenRepoTags
+      Caption = 'menuOpenRepoTags (actOpenRepoTags)'
     end
   end
 end

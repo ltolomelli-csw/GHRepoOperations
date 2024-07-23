@@ -3,11 +3,11 @@ unit GHRepoOperations.MainForm;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Winapi.Windows, Winapi.ShellAPI, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Data.DB, Vcl.StdCtrls,
   Vcl.Grids, Vcl.DBGrids,
   GHRepoOperations.Models, AdvCustomControl, AdvTreeViewBase, AdvTreeViewData,
-  AdvCustomTreeView, AdvTreeView, Vcl.ComCtrls,
+  AdvCustomTreeView, AdvTreeView, System.Actions, Vcl.ActnList, Vcl.Menus, Vcl.ComCtrls,
   System.Generics.Collections,
   System.IOUtils,
   System.Threading,
@@ -44,6 +44,16 @@ type
     btnSelectAll: TButton;
     btnDeselectAll: TButton;
     btnReverseSelection: TButton;
+    ActionList1: TActionList;
+    popupTree: TPopupMenu;
+    actOpenRepoMain: TAction;
+    menuOpenRepoMain: TMenuItem;
+    actOpenRepoBranch: TAction;
+    actOpenRepoReleases: TAction;
+    menuOpenRepoBranch: TMenuItem;
+    menuOpenRepoReleases: TMenuItem;
+    actOpenRepoTags: TAction;
+    menuOpenRepoTags: TMenuItem;
     procedure btnRepoListClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure tvMainAfterUnCheckNode(Sender: TObject;
@@ -57,9 +67,18 @@ type
     procedure btnSelectAllClick(Sender: TObject);
     procedure btnDeselectAllClick(Sender: TObject);
     procedure btnReverseSelectionClick(Sender: TObject);
+    procedure tvMainNodeMouseEnter(Sender: TObject;
+      ANode: TAdvTreeViewVirtualNode);
+    procedure tvMainNodeMouseLeave(Sender: TObject;
+      ANode: TAdvTreeViewVirtualNode);
+    procedure actOpenRepoMainExecute(Sender: TObject);
+    procedure actOpenRepoBranchExecute(Sender: TObject);
+    procedure actOpenRepoReleasesExecute(Sender: TObject);
+    procedure actOpenRepoTagsExecute(Sender: TObject);
   private
     FMainRT: TGHRepoOperationsRT;
     FTreeViewBuilder: TTreeViewBuilder;
+    FSelectedNode: TAdvTreeViewNode;
     procedure FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
     procedure OnTerminateFillTreeView(Sender: TObject);
     procedure EnableBtnRepoList;
@@ -68,9 +87,9 @@ type
     procedure EnableRgNewMainTag;
     function GetNewTagOperationFromSelection: TNewTagOperation;
     function NewTagOptionOnlySelected: Boolean;
-    procedure InitComponents;
-
     procedure InitCompPushNewTag;
+    procedure InitComponents;
+    procedure OpenRepoLink(const ARepoLinkType: TRepoLinkType);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -82,6 +101,26 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TFrmMain.actOpenRepoBranchExecute(Sender: TObject);
+begin
+  OpenRepoLink(rltBranch);
+end;
+
+procedure TFrmMain.actOpenRepoMainExecute(Sender: TObject);
+begin
+  OpenRepoLink(rltMain);
+end;
+
+procedure TFrmMain.actOpenRepoReleasesExecute(Sender: TObject);
+begin
+  OpenRepoLink(rltReleases);
+end;
+
+procedure TFrmMain.actOpenRepoTagsExecute(Sender: TObject);
+begin
+  OpenRepoLink(rltTags);
+end;
 
 procedure TFrmMain.btnDeselectAllClick(Sender: TObject);
 var
@@ -219,6 +258,26 @@ begin
   end;
 end;
 
+procedure TFrmMain.OpenRepoLink(const ARepoLinkType: TRepoLinkType);
+var
+  LNodeData: TTVNodeData;
+  LLink: string;
+begin
+  if Assigned(FSelectedNode) and TTreeViewBuilder.GetTVNodeData(FSelectedNode, LNodeData) then
+  begin
+    case ARepoLinkType of
+      rltMain:      LLink := LNodeData.RepoModel.GetLink;
+      rltBranch:    LLink := LNodeData.RepoModel.GetLink(LNodeData.Branch);
+      rltReleases:  LLink := LNodeData.RepoModel.GetReleasesLink;
+      rltTags:      LLink := LNodeData.RepoModel.GetTagsLink;
+      else
+        raise Exception.Create('Tipologia link non supportata');
+    end;
+
+    ShellExecute(0, 'open', PWideChar(LLink), nil, nil, SW_SHOWNORMAL);
+  end;
+end;
+
 procedure TFrmMain.FillTreeView(const ARepoModels: TArray<TGHCliRepoModel>);
 begin
   tvMain.BeginUpdate;
@@ -299,6 +358,18 @@ begin
   if TTreeViewBuilder.GetTVNodeData(ANode.Node, LNodeData) then
     if LNodeData.IsRoot then
       tvMain.UnCheckNode(ANode.Node, 0, True);
+end;
+
+procedure TFrmMain.tvMainNodeMouseEnter(Sender: TObject;
+  ANode: TAdvTreeViewVirtualNode);
+begin
+  FSelectedNode := ANode.Node;
+end;
+
+procedure TFrmMain.tvMainNodeMouseLeave(Sender: TObject;
+  ANode: TAdvTreeViewVirtualNode);
+begin
+  FSelectedNode := nil;
 end;
 
 end.

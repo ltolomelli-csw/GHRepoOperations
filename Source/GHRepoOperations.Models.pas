@@ -19,10 +19,15 @@ type
     Name: string;
     Branches: TArray<string>;
     Tags: TArray<TGHCliReleaseModel>;
+  private
+    function GetRepoMainLink: string;
   public
     destructor Destroy; override;
 
     function FullName: string;
+    function GetLink(const ABranchName: string = ''): string;
+    function GetReleasesLink: string;
+    function GetTagsLink: string;
   end;
 
   TTVNodeData = class
@@ -52,6 +57,28 @@ end;
 function TGHCliRepoModel.FullName: string;
 begin
   Result := Organization + '/' + Name;
+end;
+
+function TGHCliRepoModel.GetLink(const ABranchName: string): string;
+begin
+  Result := GetRepoMainLink;
+  if not(ABranchName.Trim.IsEmpty) and not(SameText(ABranchName, 'main')) then
+    Result := Result + '/tree/' + ABranchName.Trim;
+end;
+
+function TGHCliRepoModel.GetReleasesLink: string;
+begin
+  Result := GetRepoMainLink + '/releases';
+end;
+
+function TGHCliRepoModel.GetRepoMainLink: string;
+begin
+  Result := 'https://github.com/' + FullName;
+end;
+
+function TGHCliRepoModel.GetTagsLink: string;
+begin
+  Result := GetRepoMainLink + '/tags';
 end;
 
 { TTVNodeData }
