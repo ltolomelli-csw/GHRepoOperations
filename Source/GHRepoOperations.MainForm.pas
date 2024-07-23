@@ -338,6 +338,7 @@ end;
 procedure TFrmMain.rgOptionNewMainTagClick(Sender: TObject);
 begin
   EnableRgNewMainTag;
+  rgNewMainTag.ItemIndex := -1;
 end;
 
 procedure TFrmMain.tvMainAfterCheckNode(Sender: TObject;
